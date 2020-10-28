@@ -41,6 +41,3 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
-
-# Data
-usa_00001.dat

@@ -10,6 +10,9 @@ output: pdf_document
 #Import libraries
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(broom)
+library(here)
+library(skimr)
 library(usmap)
 library(ggplot2)
 ```
