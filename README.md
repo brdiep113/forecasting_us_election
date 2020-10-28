@@ -3,8 +3,8 @@ This repo contains code and data for forecasting the US 2020 presidential electi
 
 Inputs contain data that are unchanged from their original source. We use two datasets to build our model:
 
-- [Survey data - Tanya detail how you got the survey data]
-- [ACS data - Brian detail how you got the ACS data]
+- [Survey data - To obtain the survey data navigate to "https://www.voterstudygroup.org/publication/nationscape-data-set". Once there type in your information at the bottom of the page and click submit request. You will recieve an email detailing when you can download the data.]
+- [ACS data - To obtain the ACS data first register an account at "https://usa.ipums.org". After registering, apply for access of the ACS data and login to the website. Once logged in navigate to Create your custom data set and click "Get Data". Select the "" surveys and the "" variables. Once done click view cart and then click create data extract. Change the dataset to "" file type and add a description to the dataset. Once finished click submit extract and download the file once it's ready.]
 
 Outputs contain data that are modified from the input data, the report, and supporting material.
 
