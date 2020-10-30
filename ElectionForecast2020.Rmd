@@ -29,7 +29,9 @@ summary(cars)
 
 ## Introduction
 
-You can also embed plots, for example:
+	The 2020 presidential election in America has been hotly discussed throughout the campaign season as the country appears divided on many key issues such as climate change, gun control, handling of the coronavirus, immigration and more. While election polls ideally predict the outcome of the election, information can also be derived regarding how respondents feel about important issues. Data from the Democracy Fund and the UCLA Nationscape was used to produce a model to help understand what demographic factors of respondents predicted their voting. 
+	Using binary logistical regression, key demographic factors such as age, race/ethnicity, income, gender and state showed significantly relation to election outcomes. In particular, voters for Joe Biden were more likely to be younger, female, with income less than a hundred thousand dollars per year and from blue states (states more likely to vote democrat). Older, white males, who made over a hundred thousand dollars per year, were more likely to vote for republican candidate Donald Trump.  Using this model, a simulation was run on data provided by the American Census Survey for 2018. If everyone in the survey were to vote, it would appear as if Joe Biden is the winner (??? Not sure because we haven’t run the simulation but hopeful thinking)
+
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
