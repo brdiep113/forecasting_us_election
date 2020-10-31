@@ -73,7 +73,7 @@ data2 <-rbind(Asian, White, Black_AA, Pacific_Islander, Indigenous, South_Asian,
 ```
 ```{r race_association, echo = FALSE}
 #Create a plot of how ethnicities tend to vote
-barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
+barplot(data2$race_ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
 ```
 ```{r genderplot, echo=FALSE}
 #Make graph comparing voting habits of male and female voteds
