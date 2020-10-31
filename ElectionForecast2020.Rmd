@@ -44,6 +44,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 ## Data
 
 ```{r Prepare_data, echo = FALSE}
+reduced_data <-survey_data
 data <-filter(reduced_data, vote_2020 %in% c('Joe Biden', 'Donald Trump'))
 data$vote_2020<-ifelse(data$vote_2020=="Donald Trump", 0, 1)
 data<-data %>%
@@ -70,10 +71,11 @@ Other<-filter(data, race_ethnicity %in% c("Some other race"))
 South_Asian<-filter(data, race_ethnicity %in% c("Asian (Asian Indian)"))
 South_Asian$race_ethnicity <- "South Asian"
 data2 <-rbind(Asian, White, Black_AA, Pacific_Islander, Indigenous, South_Asian, Other)
+ethnicity <-table(data2$vote_2020, data2$race_ethnicity)
 ```
 ```{r race_association, echo = FALSE}
 #Create a plot of how ethnicities tend to vote
-barplot(data2$race_ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
+barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
 ```
 ```{r genderplot, echo=FALSE}
 #Make graph comparing voting habits of male and female voteds
@@ -118,6 +120,72 @@ income <-rbind(table(vote_J$household_income), table(vote_D$household_income))
 par(las=2)
 barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
 
+```
+
+```{r}
+states <-rbind(table(vote_J$state), table(vote_D$state))
+par(las=2)
+barplot(states, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by State Brackets", ylab="Number of Respondents")
+```
+```{r ElectoralVotes, echo=FALSE}
+#creates table of states, number of electoral votes for that state, votes for biden and votes for trump
+Electoral_votes_by_state <- matrix(c(3,9,6,11,55,9,7,3,3,29,16,4,6,4,20,11,
+                                     6,8,8,11,10,4,16,10,10,6,3,15,3,5,4,14,
+                                     5,6,29,18,7,7,20,4,9,3,11,38,6,13,3,12,10,5,3),
+                                   ncol=1, byrow=TRUE)
+rownames(Electoral_votes_by_state) <- c("AK","AL","AR","AZ","CA","CO","CT","DC","DE",
+                                        "FL","GA","HI","IA","ID","IL","IN","KS","KY",
+                                        "LA","MA","MD","ME","MI","MN","MO","MS","MT",
+                                        "NC","ND","NE","NH","NJ","NM","NV","NY","OH",
+                                        "OK","OR","PA","RI","SC","SD","TN","TX","UT",
+                                        "VA","VT","WA","WI","WV","WY")
+colnames(Electoral_votes_by_state) <- "Number of Votes"
+
+Electoral_votes_by_state <- tibble(Electoral_votes_by_state)
+Electoral_votes_by_state <- Electoral_votes_by_state %>% 
+  mutate(States = c("AK","AL","AR","AZ","CA","CO","CT","DC","DE",
+                                        "FL","GA","HI","IA","ID","IL","IN","KS","KY",
+                                        "LA","MA","MD","ME","MI","MN","MO","MS","MT",
+                                        "NC","ND","NE","NH","NJ","NM","NV","NY","OH",
+                                        "OK","OR","PA","RI","SC","SD","TN","TX","UT",
+                                        "VA","VT","WA","WI","WV","WY"), 
+         "Number of Votes" = matrix(c(3,9,6,11,55,9,7,3,3,29,16,4,6,4,20,11,
+                                     6,8,8,11,10,4,16,10,10,6,3,15,3,5,4,14,
+                                     5,6,29,18,7,7,20,4,9,3,11,38,6,13,3,12,10,5,3),
+                                   ncol=1, byrow=TRUE),
+         "Votes for Biden" = votes_for_biden_states,
+         "Votes for Trump" = votes_for_trump_states)
+
+
+Electoral_votes_by_state <- Electoral_votes_by_state %>% 
+  select(States, `Number of Votes`, `Votes for Biden`, `Votes for Trump`)
+
+votes <- Electoral_votes_by_state %>% 
+  select(`Number of Votes`, `Votes for Biden`,`Votes for Trump`)
+
+```
+
+```{r WinElectoralVotes, echo=FALSE}
+#This chunk of code goes through the Electoral_votes_by_state data and sees who wins that state's electoral votes
+
+x <- 1
+Electoral_votes_Biden = 0
+Electoral_votes_Trump = 0 
+
+while (x<52) {
+  ifelse(votes[x,2] > votes[x,3],
+         Electoral_votes_Biden <- Electoral_votes_Biden + votes[x,1],
+         Electoral_votes_Trump <- Electoral_votes_Trump + votes[x,1])
+  x = x+1
+}
+
+tibble("Number of Electoral Votes for Biden" = 
+         Electoral_votes_Biden$`Number of Votes`,
+       "Number of Electoral Votes for Trump" = 
+         Electoral_votes_Trump$`Number of Votes`)
+
+
+#Who ever gets 270 or more electoral votes win
 ```
 
 
