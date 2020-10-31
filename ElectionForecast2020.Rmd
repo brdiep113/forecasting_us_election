@@ -30,6 +30,8 @@ summary(cars)
 ## Introduction
 
 	The 2020 presidential election in America has been hotly discussed throughout the campaign season as the country appears divided on many key issues such as climate change, gun control, handling of the coronavirus, immigration and more. While election polls ideally predict the outcome of the election, information can also be derived regarding how respondents feel about important issues. Data from the Democracy Fund and the UCLA Nationscape was used to produce a model to help understand what demographic factors of respondents predicted their voting. 
+	
+	
 	Using binary logistical regression, key demographic factors such as age, race/ethnicity, income, gender and state showed significantly relation to election outcomes. In particular, voters for Joe Biden were more likely to be younger, female, with income less than a hundred thousand dollars per year and from blue states (states more likely to vote democrat). Older, white males, who made over a hundred thousand dollars per year, were more likely to vote for republican candidate Donald Trump.  Using this model, a simulation was run on data provided by the American Census Survey for 2018. If everyone in the survey were to vote, it would appear as if Joe Biden is the winner (??? Not sure because we haven’t run the simulation but hopeful thinking)
 
 
@@ -41,10 +43,83 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 ## Data
 
-```{r us, echo=FALSE}
-plot_usmap() +
-  scale_fill_continuous()
+```{r Prepare_data, echo = FALSE}
+data <-filter(reduced_data, vote_2020 %in% c('Joe Biden', 'Donald Trump'))
+data$vote_2020<-ifelse(data$vote_2020=="Donald Trump", 0, 1)
+data<-data %>%
+mutate(age = case_when(
+    between(age, 0, 24) ~ "0-24",
+    between(age, 25, 34) ~ "25-34",
+    between(age, 35, 44) ~ "35-44",
+    between(age, 45, 54) ~ "45-54",
+    between(age, 55, 64) ~ "55-64",
+    between(age, 65, 74) ~ "65-74",
+    between(age, 75, Inf) ~ "75+"))
+
+#Amalgamate ethnicities to match census 
+Asian<-filter(data, race_ethnicity %in% c("Asian (Japanese)", "Asian (Japanese)", "Asian (Other)","Asian (Chinese)", "Asian (Korean)", "Asian (Filipino)", "Asian (Vietnamese)"))
+Asian$race_ethnicity <- "Asian"
+White<-filter(data, race_ethnicity %in% c("White"))
+Black_AA<-filter(data, race_ethnicity %in% c("Black, or African American"))
+Pacific_Islander <-filter(data, race_ethnicity %in% c("Pacific Islander (Samoan)", "Pacific Islander (Native Hawaiian)", "Pacific Islander (Other)","Pacific Islander (Guamanian)"))
+Pacific_Islander$race_ethnicity <- "Pacific Islander"
+
+Indigenous<-filter(data, race_ethnicity %in% c("American Indian or Alaska Native"))
+Indigenous$race_ethnicity <- "Indigenous"
+Other<-filter(data, race_ethnicity %in% c("Some other race"))
+South_Asian<-filter(data, race_ethnicity %in% c("Asian (Asian Indian)"))
+South_Asian$race_ethnicity <- "South Asian"
+data2 <-rbind(Asian, White, Black_AA, Pacific_Islander, Indigenous, South_Asian, Other)
 ```
+```{r race_association, echo = FALSE}
+#Create a plot of how ethnicities tend to vote
+barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
+```
+```{r genderplot, echo=FALSE}
+#Make graph comparing voting habits of male and female voteds
+gen_vote<-table(reduced_data$gender, reduced_data$vote_2020)
+col = c("red","blue")
+barplot(gen_vote, beside = TRUE, legend.text = TRUE, col = col, border = "white", main="How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
+```
+
+```{r ageplot, echo=FALSE}
+gen_vote<-table(data$vote_2020, data$age)
+barplot(gen_vote, beside = TRUE, legend.text = c("Donald Trump", "Joe Biden"), col = col, border = "white", main="How Respondents Plan to Vote in 2020 By Age Group", ylab="Number of respondents", xlab="Age Groups in Years", cex.names = 0.7)
+```
+
+```{r votecompare}
+#Filter Data for Donald Trump Voters in 2016
+vote_compareD <-filter(data, vote_2016=="Donald Trump")
+vote_compareD <-table(vote_compareD$vote_2020)
+
+#Filter Data for Hillary Clinton Voters in 2016
+vote_compareHi <-filter(data, vote_2016=="Hillary Clinton")
+vote_compareH <-table(vote_compareHi$vote_2020)
+
+par(mfrow = c(1:2))
+barplot(vote_compareD, col = "red", cex.names = 0.7, xlab="Voted for Trump in 2016", legend.text = c("Donald Trump", "Joe Biden"))
+barplot(vote_compareH, col="blue", cex.names = 0.7, xlab="Voted for Clinton in 2016", legend.text = c("Donald Trump", "Joe Biden"))
+```
+```{r partyassoc, echo=FALSE}
+vote_D <-filter(reduced_data, vote_2020=="Donald Trump")
+ideo <-table(vote_D$ideo5)
+pie(ideo, main="Political Party Association of Respondents Voting for Donald Trump")
+vote_J <-filter(reduced_data, vote_2020=="Joe Biden")
+ideoJ <-table(vote_J$ideo5)
+
+pie(ideo, main="Political Party Association of Respondents Voting for Donald Trump")
+pie(ideoJ, main="Political Party Association of Respondents Voting for Joe Biden")
+
+```
+```{r income, echo=FALSE}
+vote_D <-filter(reduced_data, vote_2020=="Donald Trump")
+vote_J <-filter(reduced_data, vote_2020=="Joe Biden")
+income <-rbind(table(vote_J$household_income), table(vote_D$household_income))
+par(las=2)
+barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
+
+```
+
 
 
 ## Model
