@@ -127,12 +127,12 @@ survey_data <-
     race_ethnicity %in% c("Asian (Japanese)", "Asian (Japanese)", 
                           "Asian (Other)", "Asian (Chinese)", "Asian (Korean)",
                           "Asian (Filipino)", "Asian (Vietnamese)", 
-                          "Pacific Islander (Samoan)", 
+                          "Asian (Asian Indian)", "Pacific Islander (Samoan)", 
                           "Pacific Islander (Native Hawaiian)",
                           "Pacific Islander (Other)",
                           "Pacific Islander (Guamanian)"
                           ) ~ "Asian/Pacific Islander",
-    race_ethnicity == "Some other race" ~ "Other/mixed",
+    race_ethnicity == "Some other race" | is.na(race_ethnicity)~ "Other/mixed",
     race_ethnicity == "White" ~ "White",
     race_ethnicity == "American Indian or Alaska Native" ~ "Native American"
   ))
@@ -173,60 +173,80 @@ survey_data <-
 
 # Maybe check the values?
 # Is vote a binary? If not, what are you going to do?
+library(broom)
+library(brms) # Used for the modelling
+library(here)
+library(tidybayes) # Used to help understand the modelling estimates
+library(tidyverse)
 
-mylogit <- glm(vote_2020 ~ as.factor(state) + as.factor(gender) + 
-               as.factor(race_ethnicity) + as.factor(household_income) +
-                 as.factor(hispanic) + as.factor(employment) + as.factor(age),
-               data=survey_data, family="binomial")
+model_states <- brm(vote_2020 ~ gender + age + household_income +
+                    race_ethnicity + hispanic + employment + state,
+                    data = survey_data, 
+                    family = bernoulli(),
+                    file = "outputs/model/brms_model_states3",
+                    chains=6
+                    )
 
-summary(mylogit)
+model <- read_rds("outputs/model/brms_model_states3.rds")
+summary(model)
 
-pop_vote <- plyr::count(census_data, c("state", "gender", "age", "race_ethnicity", "hispanic", "household_income", "employment"))
+pop_vote <- plyr::count(census_data, c("state", "gender", "age",
+                                       "race_ethnicity", "hispanic",
+                                       "household_income", "employment"))
 pop_vote <- pop_vote %>%
   mutate(prop = freq / sum(freq)) %>%
   ungroup()
 
-pop_vote$estimate <- mylogit %>%
-  predict(newdata = pop_vote)
+post_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(state, .draw) %>% 
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(state) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025), 
+            upper = quantile(biden_predict, 0.975))
+
+sum(post_stratified_estimates$mean)
+
+#mylogit <- glm(vote_2020 ~ as.factor(state) + as.factor(gender) + 
+#               as.factor(race_ethnicity) + as.factor(household_income) +
+#                 as.factor(hispanic) + as.factor(employment) + as.factor(age),
+#               data=survey_data, family="binomial")
+
+#summary(mylogit)
+
+#broom::tidy(mylogit, par_type = "varying")
+
+#pop_vote$estimate <- mylogit %>%
+#  predict(newdata = pop_vote)
 
 #pop_vote <- pop_vote %>%
 #  mutate(estimate = ifelse(estimate < 0, 0, estimate)) %>%
 #  mutate(estimate = ifelse(estimate > 1, 1, estimate))
   
-  
-post_stratified_estimate <- pop_vote %>%
-  mutate(biden_predict_prop = estimate*prop) %>% 
-  group_by(state) %>%
-  summarise(biden_predict_prop = sum(biden_predict_prop))
 
-sum(post_stratified_estimate$biden_predict_prop)
-pop_vote$estimate <- mylogit %>%
-  predict(newdata = pop_vote)
-
-pop_vote <- pop_vote %>% 
-  mutate(biden_predict_prop = estimate*prop) %>% 
-  group_by(state) %>%
-  summarise(biden_predict_prop = sum(biden_predict_prop))
 
 states <- c("AK","AL","AR","AZ","CA","CO","CT","DC","DE","FL","GA","HI","IA",
             "ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS",
             "MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA",
             "RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV","WY")
 
-for (val in states) {
-  state_model <- survey_data %>%
-    filter(state == val) %>% glm(vote_2020 ~  as.factor(gender) + as.factor(race_ethnicity)
-                                 + as.factor(household_income) + as.factor(hispanic) +
-                                   as.factor(employment) + as.factor(age),
-                                 family = "binomial")
+#for (val in states) {
+#state_model <- survey_data %>%
+#    filter(state == val) %>% glm(vote_2020 ~  as.factor(gender) + as.factor(race_ethnicity)
+#                                 + as.factor(household_income) + as.factor(hispanic) +
+#                                   as.factor(employment) + as.factor(age),
+#                                 family = "binomial")
   
-  state_census <- vote %>%
-    filter(state == val)
+#  state_census <- vote %>%
+#    filter(state == val)
   
-  vote$val <- state_model %>%
-    predict(newdata=state_census)
+#  vote$val <- state_model %>%
+#    predict(newdata=state_census)
   
-  vote %>% 
-    mutate(biden_predict_prop = val*prop) %>%
-    summarise(biden_predict_prop = sum(biden_predict_prop))
-}
+#  vote %>% 
+#    mutate(biden_predict_prop = val*prop) %>%
+#    summarise(biden_predict_prop = sum(biden_predict_prop))
+#}

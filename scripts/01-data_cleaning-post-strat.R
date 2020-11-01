@@ -227,7 +227,6 @@ census_data <-
 
 
 ## Get proportions (popular vote)
-vote <- plyr::count(census_data, c("state", "gender", "age", "race_ethnicity", "hispanic", "household_income", "employment"))
 #vote <- vote %>%
 #  group_by(state) %>%
 #  mutate(prop = freq / sum(freq)) %>%
