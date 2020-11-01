@@ -14,6 +14,7 @@
 library(haven)
 library(tidyverse)
 library(plyr)
+library(fastmatch)
 
 # Read in the raw data. 
 raw_data <- read_dta("inputs/data/usa_00005.dta")
@@ -62,11 +63,32 @@ census_data <-
     between(age, 65, 74) ~ "65-74",
     between(age, 75, Inf) ~ "75+"))
 
+census_data <- 
+  census_data %>% 
+  mutate(age_rank = fmatch(census_data$age, c("18-24", "25-34", "35-44", "45-54",
+                                              "55-64", "65-74", "75+")))
+
 # Change state column to match requirements
 names(census_data)[names(census_data) == "stateicp"] <- "state"
-#census_data <-
-#  census_data %>%
-#  rename(state = stateicp)
+
+census_data <-
+  census_data %>%
+  mutate(state = fmatch(census_data$state, c("alaska","alabama","arkansas","arizona",
+                                             "california","colorado","connecticut",
+                                             "district of columbia","delaware","florida",
+                                             "georgia","hawaii","iowa","idaho",
+                                             "illinois","indiana","kansas",
+                                             "kentucky","louisiana","massachusetts",
+                                             "maryland","maine","michigan","minnesota",
+                                             "missouri","mississippi","montana",
+                                             "north carolina","north dakota",
+                                             "nebraska","new hampshire","new jersey",
+                                             "new mexico","nevada","new york",
+                                             "ohio","oklahoma","oregon","pennsylvania",
+                                             "rhode island","south carolina",
+                                             "south dakota","tennessee","texas",
+                                             "utah","virginia","vermont","washington",
+                                             "wisconsin","west virginia","wyoming")))
 
 # Clean income
 # Remove 999999 responses (N/A code)
@@ -87,41 +109,64 @@ census_data <-
     between(ftotinc, 200000, Inf) ~ "Eat the rich"
   ))
 
+census_data <- 
+  census_data %>% 
+  mutate(income_rank = fmatch(census_data$ftotinc, c("Under Poverty Line", "Low Income",
+                                                              "Lower Middle Income", "Upper Middle Income",
+                                                              "High Income", "Eat the rich")))
+
 # Clean race/ethnicity data
 
 #Group up races
 census_data <-
   census_data %>%
   mutate(race = case_when(
-    race == "black/african american/negro" ~ "black",
-    race == "chinese" | race == "japanese" | race == "other asian or pacific islander" ~ "asian or pacific islander",
-    race %in% c("other race, nec", "two major races", "three or more major races") ~ "other/mixed",
-    race == "white" ~ "white",
-    race == "american indian or alaska native" ~ "native"
+    race == "black/african american/negro" ~ 1,
+    race == "chinese" | race == "japanese" | race == "other asian or pacific islander" ~ 2,
+    race %in% c("other race, nec", "two major races", "three or more major races") ~ 3,
+    race == "white" ~ 4,
+    race == "american indian or alaska native" ~ 5
   ))
+
+names(census_data)[names(census_data) == "race"] <- "race_ethnicity"
 
 # Make hispanic binary variable
 census_data <-
   census_data %>%
-  mutate(hispan = ifelse(hispan == "not hispanic", "not hispanic", "hispanic"))
+  mutate(hispan = ifelse(hispan == "not hispanic", 0, 1))
 
-# Make education
-#census_data <-
-#  census_data %>%
-#  mutate(education = case_when(
-#    educd %in% c("no schooling completed", "nursery school, preschool", "kindergarten",
-#                 "grade 1", "grade 2", "grade 3", "grade 4", "grade 5", "grade 6",
-#                 "grade 7", "grade 8", "grade 9", "grade 10", "grade 11", 
-#                 "grade 12, no diploma") ~ "Did not complete high school",
-#    educd %in% c("regular high school diploma", "ged or alternative credential") ~ "High school or equivalent",
-#    educd %in% c("some college, but less than 1 year", "1 or more years of college credit, no degree",
-#                 "associate's degree, type not specified", "bachelor's degree", )
-    
-    
-#  ))
+names(census_data)[names(census_data) == "hispan"] <- "hispanic"
+
+# Group up employment
+# 1 = Employed
+# 2 = Out of labour market
+# 3 = Unemployed
+# 4 = Other
+
+census_data <-
+  census_data %>%
+  mutate(empstat = case_when(
+    empstat == "employed" ~ 1,
+    empstat == "not in labor force" ~ 2,
+    empstat == "unemployed" ~ 3,
+    empstat == "na" ~ 4
+  ))
+
+names(census_data)[names(census_data) == "empstat"] <- "employment"
+
+# Make sex into gender
+names(census_data)[names(census_data) == "sex"] <- "gender"
+
+# Make sex binary
+# 1 = Male
+# 0 = Female
+census_data <-
+  census_data %>%
+  mutate(gender = ifelse(gender == "male", 1, 0))
+
 
 ## Get proportions (popular vote)
-d <- count(census_data, c("state", "sex", "age", "race", "hispan", "ftotinc", "empstat"))
+d <- count(census_data, c("state", "gender", "age_rank", "race_ethnicity", "hispanic", "income_rank", "employment"))
 d <- d %>%
   group_by(state) %>%
   mutate(prop = freq / sum(freq)) %>%

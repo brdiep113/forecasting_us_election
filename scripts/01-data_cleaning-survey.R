@@ -175,3 +175,7 @@ mylogit <- glm(vote_2020 ~ as.factor(state) + gender +
                data=survey_data, family="binomial")
 
 summary(mylogit)
+
+vote_pred <- mylogit %>%
+  predict(d, type="response") %>%
+  mutate(vote_biden_prop = vote_biden_predict*prop)
