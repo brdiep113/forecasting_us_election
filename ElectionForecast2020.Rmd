@@ -122,7 +122,7 @@ barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "D
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 states <-rbind(table(vote_J$state), table(vote_D$state))
 par(las=2)
 barplot(states, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by State Brackets", ylab="Number of Respondents")
