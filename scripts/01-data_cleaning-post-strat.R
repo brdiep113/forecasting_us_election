@@ -63,32 +63,89 @@ census_data <-
     between(age, 65, 74) ~ "65-74",
     between(age, 75, Inf) ~ "75+"))
 
-census_data <- 
-  census_data %>% 
-  mutate(age_rank = fmatch(census_data$age, c("18-24", "25-34", "35-44", "45-54",
-                                              "55-64", "65-74", "75+")))
+#census_data <- 
+#  census_data %>% 
+#  mutate(age_rank = fmatch(census_data$age, c("18-24", "25-34", "35-44", "45-54",
+#                                              "55-64", "65-74", "75+")))
 
 # Change state column to match requirements
 names(census_data)[names(census_data) == "stateicp"] <- "state"
 
+#census_data <-
+#  census_data %>%
+#  mutate(state = fmatch(census_data$state, c("alaska","alabama","arkansas","arizona",
+#                                             "california","colorado","connecticut",
+#                                             "district of columbia","delaware","florida",
+#                                             "georgia","hawaii","iowa","idaho",
+#                                             "illinois","indiana","kansas",
+#                                             "kentucky","louisiana","massachusetts",
+##                                             "maryland","maine","michigan","minnesota",
+#                                             "missouri","mississippi","montana",
+#                                             "north carolina","north dakota",
+#                                             "nebraska","new hampshire","new jersey",
+#                                             "new mexico","nevada","new york",
+#                                             "ohio","oklahoma","oregon","pennsylvania",
+#                                             "rhode island","south carolina",
+#                                             "south dakota","tennessee","texas",
+#                                             "utah","virginia","vermont","washington",
+#                                             "wisconsin","west virginia","wyoming")))
+
+
 census_data <-
   census_data %>%
-  mutate(state = fmatch(census_data$state, c("alaska","alabama","arkansas","arizona",
-                                             "california","colorado","connecticut",
-                                             "district of columbia","delaware","florida",
-                                             "georgia","hawaii","iowa","idaho",
-                                             "illinois","indiana","kansas",
-                                             "kentucky","louisiana","massachusetts",
-                                             "maryland","maine","michigan","minnesota",
-                                             "missouri","mississippi","montana",
-                                             "north carolina","north dakota",
-                                             "nebraska","new hampshire","new jersey",
-                                             "new mexico","nevada","new york",
-                                             "ohio","oklahoma","oregon","pennsylvania",
-                                             "rhode island","south carolina",
-                                             "south dakota","tennessee","texas",
-                                             "utah","virginia","vermont","washington",
-                                             "wisconsin","west virginia","wyoming")))
+  mutate(state = case_when(
+    state == "alaska" ~ "AK",
+    state == "alabama" ~ "AL",
+    state == "arkansas" ~ "AR",
+    state == "arizona" ~ "AZ",
+    state == "california" ~ "CA",
+    state == "colorado" ~ "CO",
+    state == "connecticut" ~ "CT",
+    state == "district of columbia" ~ "DC",
+    state == "delaware" ~ "DE",
+    state == "florida" ~ "FL",
+    state == "georgia" ~ "GA",
+    state == "hawaii" ~ "HI",
+    state == "iowa" ~ "IA",
+    state == "idaho" ~ "ID",
+    state == "illinois" ~ "IL",
+    state == "indiana" ~ "IN",
+    state == "kansas" ~ "KS",
+    state == "kentucky" ~ "KY",
+    state == "louisiana" ~ "LA",
+    state == "massachusetts" ~ "MA",
+    state == "maryland" ~ "MD",
+    state == "maine" ~ "ME",
+    state == "michigan" ~ "MI",
+    state == "minnesota" ~ "MN",
+    state == "missouri" ~ "MO",
+    state == "mississippi" ~ "MS",
+    state == "montana" ~ "MT",
+    state == "north carolina" ~ "NC",
+    state == "north dakota" ~ "ND",
+    state == "nebraska" ~ "NE",
+    state == "new hampshire" ~ "NH",
+    state == "new jersey" ~ "NJ",
+    state == "new mexico" ~ "NM",
+    state == "nevada" ~ "NV",
+    state == "new york" ~ "NY",
+    state == "ohio" ~ "OH",
+    state == "oklahoma" ~ "OK",
+    state == "oregon" ~ "OR",
+    state == "pennsylvania" ~ "PA",
+    state == "rhode island" ~ "RI",
+    state == "south carolina" ~ "SC",
+    state == "south dakota" ~ "SD",
+    state == "tennessee" ~ "TN",
+    state == "texas" ~ "TX",
+    state == "utah" ~ "UT",
+    state == "virginia" ~ "VA",
+    state == "vermont" ~ "VT",
+    state == "washington" ~ "WA",
+    state == "wisconsin" ~ "WI",
+    state == "west virginia" ~ "WV",
+    state == "wyoming" ~ "WY"
+  ))
 
 # Clean income
 # Remove 999999 responses (N/A code)
@@ -109,11 +166,12 @@ census_data <-
     between(ftotinc, 200000, Inf) ~ "Eat the rich"
   ))
 
-census_data <- 
-  census_data %>% 
-  mutate(income_rank = fmatch(census_data$ftotinc, c("Under Poverty Line", "Low Income",
-                                                              "Lower Middle Income", "Upper Middle Income",
-                                                              "High Income", "Eat the rich")))
+names(census_data)[names(census_data) == "ftotinc"] <- "household_income"
+#census_data <- 
+#  census_data %>% 
+#  mutate(income_rank = fmatch(census_data$ftotinc, c("Under Poverty Line", "Low Income",
+#                                                              "Lower Middle Income", "Upper Middle Income",
+#                                                              "High Income", "Eat the rich")))
 
 # Clean race/ethnicity data
 
@@ -121,11 +179,11 @@ census_data <-
 census_data <-
   census_data %>%
   mutate(race = case_when(
-    race == "black/african american/negro" ~ 1,
-    race == "chinese" | race == "japanese" | race == "other asian or pacific islander" ~ 2,
-    race %in% c("other race, nec", "two major races", "three or more major races") ~ 3,
-    race == "white" ~ 4,
-    race == "american indian or alaska native" ~ 5
+    race == "black/african american/negro" ~ "Black",
+    race == "chinese" | race == "japanese" | race == "other asian or pacific islander" ~ "Asian/Pacific Islander",
+    race %in% c("other race, nec", "two major races", "three or more major races") ~ "Other/mixed",
+    race == "white" ~ "White",
+    race == "american indian or alaska native" ~ "Native American"
   ))
 
 names(census_data)[names(census_data) == "race"] <- "race_ethnicity"
@@ -133,7 +191,7 @@ names(census_data)[names(census_data) == "race"] <- "race_ethnicity"
 # Make hispanic binary variable
 census_data <-
   census_data %>%
-  mutate(hispan = ifelse(hispan == "not hispanic", 0, 1))
+  mutate(hispan = ifelse(hispan == "not hispanic", "Not Hispanic", "Hispanic"))
 
 names(census_data)[names(census_data) == "hispan"] <- "hispanic"
 
@@ -145,11 +203,14 @@ names(census_data)[names(census_data) == "hispan"] <- "hispanic"
 
 census_data <-
   census_data %>%
+  filter(empstat %ni% c("n/a"))
+
+census_data <-
+  census_data %>%
   mutate(empstat = case_when(
-    empstat == "employed" ~ 1,
-    empstat == "not in labor force" ~ 2,
-    empstat == "unemployed" ~ 3,
-    empstat == "na" ~ 4
+    empstat == "employed" ~ "Employed",
+    empstat == "not in labor force" ~ "Not in labour force",
+    empstat == "unemployed" ~ "Unemployed"
   ))
 
 names(census_data)[names(census_data) == "empstat"] <- "employment"
@@ -162,12 +223,12 @@ names(census_data)[names(census_data) == "sex"] <- "gender"
 # 0 = Female
 census_data <-
   census_data %>%
-  mutate(gender = ifelse(gender == "male", 1, 0))
+  mutate(gender = ifelse(gender == "male", "Male", "Female"))
 
 
 ## Get proportions (popular vote)
-d <- count(census_data, c("state", "gender", "age_rank", "race_ethnicity", "hispanic", "income_rank", "employment"))
-d <- d %>%
-  group_by(state) %>%
-  mutate(prop = freq / sum(freq)) %>%
-  ungroup()
+vote <- plyr::count(census_data, c("state", "gender", "age", "race_ethnicity", "hispanic", "household_income", "employment"))
+#vote <- vote %>%
+#  group_by(state) %>%
+#  mutate(prop = freq / sum(freq)) %>%
+#  ungroup()

@@ -65,15 +65,15 @@ survey_data <-
     between(age, 65, 74) ~ "65-74",
     between(age, 75, Inf) ~ "75+"))
 
-survey_data <- 
-  survey_data %>% 
-  mutate(age_rank = fmatch(survey_data$age, c("18-24", "25-34", "35-44", "45-54",
-                                              "55-64", "65-74", "75+")))
+#survey_data <- 
+#  survey_data %>% 
+#  mutate(age_rank = fmatch(survey_data$age, c("18-24", "25-34", "35-44", "45-54",
+#                                              "55-64", "65-74", "75+")))
 
 # Make sex into binary variable
 survey_data <-
   survey_data %>%
-  mutate(gender = ifelse(gender == "Male", 1, 0))
+  mutate(gender = ifelse(gender == "Male", "Male", "Female"))
 
 # Make income into category
 
@@ -102,17 +102,17 @@ survey_data <-
     household_income %in% c("$200,000 to $249,999", "$250,000 and above") ~ "Eat the rich"
     ))
 
-survey_data <- 
-  survey_data %>% 
-  mutate(income_rank = fmatch(survey_data$household_income, c("Under Poverty Line", "Low Income",
-                                                 "Lower Middle Income", "Upper Middle Income",
-                                                 "High Income", "Eat the rich")))
+#survey_data <- 
+#  survey_data %>% 
+#  mutate(income_rank = fmatch(survey_data$household_income, c("Under Poverty Line", "Low Income",
+#                                                 "Lower Middle Income", "Upper Middle Income",
+#                                                 "High Income", "Eat the rich")))
 
 # Make hispanic binary variable
 # 1 = Hispanic, 0 = Not Hispanic
 survey_data <-
   survey_data %>%
-  mutate(hispanic = ifelse(hispanic == "Not Hispanic", 0, 1))
+  mutate(hispanic = ifelse(hispanic == "Not Hispanic", "Not Hispanic", "Hispanic"))
 
 #Group up races
 # 1 = Black
@@ -123,7 +123,7 @@ survey_data <-
 survey_data <-
   survey_data %>%
   mutate(race_ethnicity = case_when(
-    race_ethnicity == "Black, or African American" ~ 1,
+    race_ethnicity == "Black, or African American" ~ "Black",
     race_ethnicity %in% c("Asian (Japanese)", "Asian (Japanese)", 
                           "Asian (Other)", "Asian (Chinese)", "Asian (Korean)",
                           "Asian (Filipino)", "Asian (Vietnamese)", 
@@ -131,10 +131,10 @@ survey_data <-
                           "Pacific Islander (Native Hawaiian)",
                           "Pacific Islander (Other)",
                           "Pacific Islander (Guamanian)"
-                          ) ~ 2,
-    race_ethnicity == "Some other race" ~ 3,
-    race_ethnicity == "White" ~ 4,
-    race_ethnicity == "American Indian or Alaska Native" ~ 5
+                          ) ~ "Asian/Pacific Islander",
+    race_ethnicity == "Some other race" ~ "Other/mixed",
+    race_ethnicity == "White" ~ "White",
+    race_ethnicity == "American Indian or Alaska Native" ~ "Native American"
   ))
 
 # Group up employment
@@ -143,25 +143,30 @@ survey_data <-
 # 3 = Unemployed
 # 4 = Other
 
-survey_data <-
-  survey_data %>%
-  mutate(employment = case_when(
-    employment %in% c("Full-time employed", "Part-time employed", "Self-employed") ~ 1,
-    employment %in% c("Homemaker", "Retired", "Permanently disabled", "Student") ~ 2,
-    employment %in% c("Unemployed or temporarily on layoff") ~ 3,
-    employment %in% c("Other") | is.na(employment) ~ 4
-  ))
+survey_data <- survey_data %>%
+  filter(!is.na(employment))
+
+survey_data <- survey_data %>%
+  filter(employment %ni% c("Other:"))
 
 survey_data <-
   survey_data %>%
-  mutate(state = fmatch(survey_data$state, c("AK","AL","AR","AZ","CA","CO","CT",
-                                             "DC","DE","FL","GA","HI","IA","ID",
-                                             "IL","IN","KS","KY","LA","MA","MD",
-                                             "ME","MI","MN","MO","MS","MT","NC",
-                                             "ND","NE","NH","NJ","NM","NV","NY",
-                                             "OH","OK","OR","PA","RI","SC","SD",
-                                             "TN","TX","UT","VA","VT","WA","WI",
-                                             "WV","WY")))
+  mutate(employment = case_when(
+    employment %in% c("Full-time employed", "Part-time employed", "Self-employed") ~ "Employed",
+    employment %in% c("Homemaker", "Retired", "Permanently disabled", "Student") ~ "Not in labour force",
+    employment %in% c("Unemployed or temporarily on layoff") ~ "Unemployed"
+  ))
+
+#survey_data <-
+#  survey_data %>%
+#  mutate(state = fmatch(survey_data$state, c("AK","AL","AR","AZ","CA","CO","CT",
+#                                             "DC","DE","FL","GA","HI","IA","ID",
+#                                             "IL","IN","KS","KY","LA","MA","MD",
+#                                             "ME","MI","MN","MO","MS","MT","NC",
+#                                             "ND","NE","NH","NJ","NM","NV","NY",
+#                                             "OH","OK","OR","PA","RI","SC","SD",
+#                                             "TN","TX","UT","VA","VT","WA","WI",
+#                                             "WV","WY")))
   
 # Change state column to match requirements
 #names(census_data)[names(census_data) == "stateicp"] <- "state"
@@ -169,13 +174,59 @@ survey_data <-
 # Maybe check the values?
 # Is vote a binary? If not, what are you going to do?
 
-mylogit <- glm(vote_2020 ~ as.factor(state) + gender + 
-               as.factor(race_ethnicity) + as.factor(income_rank) +
-                 hispanic + as.factor(employment) + as.factor(age_rank),
+mylogit <- glm(vote_2020 ~ as.factor(state) + as.factor(gender) + 
+               as.factor(race_ethnicity) + as.factor(household_income) +
+                 as.factor(hispanic) + as.factor(employment) + as.factor(age),
                data=survey_data, family="binomial")
 
 summary(mylogit)
 
-vote_pred <- mylogit %>%
-  predict(d, type="response") %>%
-  mutate(vote_biden_prop = vote_biden_predict*prop)
+pop_vote <- plyr::count(census_data, c("state", "gender", "age", "race_ethnicity", "hispanic", "household_income", "employment"))
+pop_vote <- pop_vote %>%
+  mutate(prop = freq / sum(freq)) %>%
+  ungroup()
+
+pop_vote$estimate <- mylogit %>%
+  predict(newdata = pop_vote)
+
+#pop_vote <- pop_vote %>%
+#  mutate(estimate = ifelse(estimate < 0, 0, estimate)) %>%
+#  mutate(estimate = ifelse(estimate > 1, 1, estimate))
+  
+  
+post_stratified_estimate <- pop_vote %>%
+  mutate(biden_predict_prop = estimate*prop) %>% 
+  group_by(state) %>%
+  summarise(biden_predict_prop = sum(biden_predict_prop))
+
+sum(post_stratified_estimate$biden_predict_prop)
+pop_vote$estimate <- mylogit %>%
+  predict(newdata = pop_vote)
+
+pop_vote <- pop_vote %>% 
+  mutate(biden_predict_prop = estimate*prop) %>% 
+  group_by(state) %>%
+  summarise(biden_predict_prop = sum(biden_predict_prop))
+
+states <- c("AK","AL","AR","AZ","CA","CO","CT","DC","DE","FL","GA","HI","IA",
+            "ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS",
+            "MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA",
+            "RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV","WY")
+
+for (val in states) {
+  state_model <- survey_data %>%
+    filter(state == val) %>% glm(vote_2020 ~  as.factor(gender) + as.factor(race_ethnicity)
+                                 + as.factor(household_income) + as.factor(hispanic) +
+                                   as.factor(employment) + as.factor(age),
+                                 family = "binomial")
+  
+  state_census <- vote %>%
+    filter(state == val)
+  
+  vote$val <- state_model %>%
+    predict(newdata=state_census)
+  
+  vote %>% 
+    mutate(biden_predict_prop = val*prop) %>%
+    summarise(biden_predict_prop = sum(biden_predict_prop))
+}
