@@ -122,11 +122,13 @@ barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "D
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 states <-rbind(table(vote_J$state), table(vote_D$state))
 par(las=2)
 barplot(states, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by State Brackets", ylab="Number of Respondents")
+
 ```
+
 ```{r ElectoralVotes, echo=FALSE}
 #creates table of states, number of electoral votes for that state, votes for biden and votes for trump
 Electoral_votes_by_state <- matrix(c(3,9,6,11,55,9,7,3,3,29,16,4,6,4,20,11,
@@ -140,6 +142,9 @@ rownames(Electoral_votes_by_state) <- c("AK","AL","AR","AZ","CA","CO","CT","DC",
                                         "OK","OR","PA","RI","SC","SD","TN","TX","UT",
                                         "VA","VT","WA","WI","WV","WY")
 colnames(Electoral_votes_by_state) <- "Number of Votes"
+
+votes_for_biden_states <- states[1,]
+votes_for_trump_states <- states[2,]
 
 Electoral_votes_by_state <- tibble(Electoral_votes_by_state)
 Electoral_votes_by_state <- Electoral_votes_by_state %>% 
