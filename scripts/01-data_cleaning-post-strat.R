@@ -79,8 +79,8 @@ census_data <-
 census_data <-
   census_data %>%
   mutate(ftotinc = case_when(
-    between(ftotinc, -Inf, 20000) ~ "Under Poverty Line",
-    between(ftotinc, 20001, 44999) ~ "Low Income",
+    between(ftotinc, -Inf, 19999) ~ "Under Poverty Line",
+    between(ftotinc, 20000, 44999) ~ "Low Income",
     between(ftotinc, 45000, 99999) ~ "Lower Middle Income",
     between(ftotinc, 100000, 149999) ~ "Upper Middle Income",
     between(ftotinc, 150000, 199999) ~ "High Income",
@@ -95,8 +95,7 @@ census_data <-
   mutate(race = case_when(
     race == "black/african american/negro" ~ "black",
     race == "chinese" | race == "japanese" | race == "other asian or pacific islander" ~ "asian or pacific islander",
-    race == "other race, nec" ~ "other",
-    race == "two major races" | race == "three or more major races" ~ "mixed",
+    race %in% c("other race, nec", "two major races", "three or more major races") ~ "other/mixed",
     race == "white" ~ "white",
     race == "american indian or alaska native" ~ "native"
   ))
