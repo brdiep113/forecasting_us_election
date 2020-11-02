@@ -1,5 +1,5 @@
 ---
-title: "ElectionForecast2020"
+title: "Biden To Win the 2020 U.S. Popular Vote and Electoral College"
 author: "Jin Long Cao, Brian Diep, Johnathan Tillman, Tanya Woloshansky"
 date: "2/11/2020"
 output: pdf_document
