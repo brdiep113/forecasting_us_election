@@ -1,20 +1,19 @@
 #### Preamble ####
-# Purpose: Prepare and clean the survey data downloaded from [...UPDATE ME!!!!!]
-# Author: Brian Diep
-# Data: 22 October 2020
-# Contact: rohan.alexander@utoronto.ca [PROBABLY CHANGE THIS ALSO!!!!]
+# Purpose: Prepare and clean the survey data downloaded from the ACS 2018
+#         Dataset (Download from instructions given in readme file)
+# Author: John Cao, Brian Diep, Jonathan Tillman, Tanya Woloshansky
+# Data: 02 November 2020
+# Contact: brian.diep@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: 
-# - Download the 2018 ACS dataset as detailed in the readme and save it to 
-#   inputs/data
-# - Don't share that data
+# - Need to have downloaded the data from the ACS 2018 Dataset and save
+# the folder that you're interested in to inputs/data 
+# - Don't upload that data file!
 
 
 #### Workspace setup ####
 library(haven)
 library(tidyverse)
-library(plyr)
-library(fastmatch)
 
 # Read in the raw data. 
 raw_data <- read_dta("inputs/data/usa_00005.dta")
@@ -70,26 +69,6 @@ census_data <-
 
 # Change state column to match requirements
 names(census_data)[names(census_data) == "stateicp"] <- "state"
-
-#census_data <-
-#  census_data %>%
-#  mutate(state = fmatch(census_data$state, c("alaska","alabama","arkansas","arizona",
-#                                             "california","colorado","connecticut",
-#                                             "district of columbia","delaware","florida",
-#                                             "georgia","hawaii","iowa","idaho",
-#                                             "illinois","indiana","kansas",
-#                                             "kentucky","louisiana","massachusetts",
-##                                             "maryland","maine","michigan","minnesota",
-#                                             "missouri","mississippi","montana",
-#                                             "north carolina","north dakota",
-#                                             "nebraska","new hampshire","new jersey",
-#                                             "new mexico","nevada","new york",
-#                                             "ohio","oklahoma","oregon","pennsylvania",
-#                                             "rhode island","south carolina",
-#                                             "south dakota","tennessee","texas",
-#                                             "utah","virginia","vermont","washington",
-#                                             "wisconsin","west virginia","wyoming")))
-
 
 census_data <-
   census_data %>%
@@ -167,13 +146,9 @@ census_data <-
   ))
 
 names(census_data)[names(census_data) == "ftotinc"] <- "household_income"
-#census_data <- 
-#  census_data %>% 
-#  mutate(income_rank = fmatch(census_data$ftotinc, c("Under Poverty Line", "Low Income",
-#                                                              "Lower Middle Income", "Upper Middle Income",
-#                                                              "High Income", "Eat the rich")))
 
-# Clean race/ethnicity data
+
+# Clean race/ethnicity  data
 
 #Group up races
 census_data <-
@@ -196,10 +171,6 @@ census_data <-
 names(census_data)[names(census_data) == "hispan"] <- "hispanic"
 
 # Group up employment
-# 1 = Employed
-# 2 = Out of labour market
-# 3 = Unemployed
-# 4 = Other
 
 census_data <-
   census_data %>%
@@ -218,16 +189,7 @@ names(census_data)[names(census_data) == "empstat"] <- "employment"
 # Make sex into gender
 names(census_data)[names(census_data) == "sex"] <- "gender"
 
-# Make sex binary
-# 1 = Male
-# 0 = Female
+# Make gender binary
 census_data <-
   census_data %>%
   mutate(gender = ifelse(gender == "male", "Male", "Female"))
-
-
-## Get proportions (popular vote)
-#vote <- vote %>%
-#  group_by(state) %>%
-#  mutate(prop = freq / sum(freq)) %>%
-#  ungroup()

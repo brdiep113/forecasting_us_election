@@ -1,19 +1,23 @@
 #### Preamble ####
-# Purpose: Prepare and clean the survey data downloaded from [...UPDATE ME!!!!!]
-# Author: Rohan Alexander and Sam Caetano [CHANGE THIS TO YOUR NAME!!!!]
-# Data: 22 October 2020
-# Contact: rohan.alexander@utoronto.ca [PROBABLY CHANGE THIS ALSO!!!!]
+# Purpose: Prepare and clean the survey data downloaded from the Nationscape
+#         Dataset (Download from instructions given in readme file)
+# Author: John Cao, Brian Diep, Jonathan Tillman, Tanya Woloshansky
+# Data: 02 November 2020
+# Contact: brian.diep@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: 
-# - Need to have downloaded the data from X and save the folder that you're 
-# interested in to inputs/data 
-# - Don't forget to gitignore it!
+# - Need to have downloaded the data from the Nationscape Dataset and save
+# the folder that you're interested in to inputs/data 
+# - Don't upload that data file!
 
 
 #### Workspace setup ####
 library(haven)
 library(tidyverse)
-library(fastmatch)
+library(broom)
+library(brms) # Used for the modelling
+library(here)
+library(tidybayes) # Used to help understand the modelling estimates
 
 # Read in the raw data (You might need to change this if you use a different dataset)
 raw_data <- read_dta("inputs/data/ns20200625/ns20200625.dta")
@@ -40,9 +44,6 @@ survey_data <-
 
 rm(raw_data)
 
-
-#### What else???? ####
-
 # Filter out third-party and non-voters
 survey_data <-
   survey_data %>% 
@@ -65,18 +66,12 @@ survey_data <-
     between(age, 65, 74) ~ "65-74",
     between(age, 75, Inf) ~ "75+"))
 
-#survey_data <- 
-#  survey_data %>% 
-#  mutate(age_rank = fmatch(survey_data$age, c("18-24", "25-34", "35-44", "45-54",
-#                                              "55-64", "65-74", "75+")))
-
 # Make sex into binary variable
 survey_data <-
   survey_data %>%
   mutate(gender = ifelse(gender == "Male", "Male", "Female"))
 
-# Make income into category
-
+# Clean income
 #Filter out null values
 
 survey_data <-
@@ -102,24 +97,12 @@ survey_data <-
     household_income %in% c("$200,000 to $249,999", "$250,000 and above") ~ "Eat the rich"
     ))
 
-#survey_data <- 
-#  survey_data %>% 
-#  mutate(income_rank = fmatch(survey_data$household_income, c("Under Poverty Line", "Low Income",
-#                                                 "Lower Middle Income", "Upper Middle Income",
-#                                                 "High Income", "Eat the rich")))
-
 # Make hispanic binary variable
-# 1 = Hispanic, 0 = Not Hispanic
 survey_data <-
   survey_data %>%
   mutate(hispanic = ifelse(hispanic == "Not Hispanic", "Not Hispanic", "Hispanic"))
 
-#Group up races
-# 1 = Black
-# 2 = Asian/Pacific Islander
-# 3 = Other/Mixed
-# 4 = White
-# 5 = Native
+#Group up race data
 survey_data <-
   survey_data %>%
   mutate(race_ethnicity = case_when(
@@ -138,10 +121,6 @@ survey_data <-
   ))
 
 # Group up employment
-# 1 = Employed
-# 2 = Out of labour market
-# 3 = Unemployed
-# 4 = Other
 
 survey_data <- survey_data %>%
   filter(!is.na(employment))
@@ -157,43 +136,23 @@ survey_data <-
     employment %in% c("Unemployed or temporarily on layoff") ~ "Unemployed"
   ))
 
-#survey_data <-
-#  survey_data %>%
-#  mutate(state = fmatch(survey_data$state, c("AK","AL","AR","AZ","CA","CO","CT",
-#                                             "DC","DE","FL","GA","HI","IA","ID",
-#                                             "IL","IN","KS","KY","LA","MA","MD",
-#                                             "ME","MI","MN","MO","MS","MT","NC",
-#                                             "ND","NE","NH","NJ","NM","NV","NY",
-#                                             "OH","OK","OR","PA","RI","SC","SD",
-#                                             "TN","TX","UT","VA","VT","WA","WI",
-#                                             "WV","WY")))
-  
-# Change state column to match requirements
-#names(census_data)[names(census_data) == "stateicp"] <- "state"
-
-# Maybe check the values?
-# Is vote a binary? If not, what are you going to do?
-library(broom)
-library(brms) # Used for the modelling
-library(here)
-library(tidybayes) # Used to help understand the modelling estimates
-library(tidyverse)
-
 model_states <- brm(vote_2020 ~ gender + age + household_income +
-                    race_ethnicity + hispanic + employment + state,
+                    race_ethnicity + hispanic + employment,
                     data = survey_data, 
                     family = bernoulli(),
-                    file = "outputs/model/brms_model_states3",
+                    file = "outputs/model/brms_model_states5",
                     chains=6
                     )
 
-model <- read_rds("outputs/model/brms_model_states3.rds")
+model <- read_rds("outputs/model/brms_model_states5.rds")
 summary(model)
 
 pop_vote <- plyr::count(census_data, c("state", "gender", "age",
                                        "race_ethnicity", "hispanic",
                                        "household_income", "employment"))
+
 pop_vote <- pop_vote %>%
+  group_by(state) %>%
   mutate(prop = freq / sum(freq)) %>%
   ungroup()
 
@@ -207,46 +166,3 @@ post_stratified_estimates <- model %>%
   summarise(mean =mean(biden_predict),
             lower = quantile(biden_predict, 0.025), 
             upper = quantile(biden_predict, 0.975))
-
-sum(post_stratified_estimates$mean)
-
-#mylogit <- glm(vote_2020 ~ as.factor(state) + as.factor(gender) + 
-#               as.factor(race_ethnicity) + as.factor(household_income) +
-#                 as.factor(hispanic) + as.factor(employment) + as.factor(age),
-#               data=survey_data, family="binomial")
-
-#summary(mylogit)
-
-#broom::tidy(mylogit, par_type = "varying")
-
-#pop_vote$estimate <- mylogit %>%
-#  predict(newdata = pop_vote)
-
-#pop_vote <- pop_vote %>%
-#  mutate(estimate = ifelse(estimate < 0, 0, estimate)) %>%
-#  mutate(estimate = ifelse(estimate > 1, 1, estimate))
-  
-
-
-states <- c("AK","AL","AR","AZ","CA","CO","CT","DC","DE","FL","GA","HI","IA",
-            "ID","IL","IN","KS","KY","LA","MA","MD","ME","MI","MN","MO","MS",
-            "MT","NC","ND","NE","NH","NJ","NM","NV","NY","OH","OK","OR","PA",
-            "RI","SC","SD","TN","TX","UT","VA","VT","WA","WI","WV","WY")
-
-#for (val in states) {
-#state_model <- survey_data %>%
-#    filter(state == val) %>% glm(vote_2020 ~  as.factor(gender) + as.factor(race_ethnicity)
-#                                 + as.factor(household_income) + as.factor(hispanic) +
-#                                   as.factor(employment) + as.factor(age),
-#                                 family = "binomial")
-  
-#  state_census <- vote %>%
-#    filter(state == val)
-  
-#  vote$val <- state_model %>%
-#    predict(newdata=state_census)
-  
-#  vote %>% 
-#    mutate(biden_predict_prop = val*prop) %>%
-#    summarise(biden_predict_prop = sum(biden_predict_prop))
-#}
