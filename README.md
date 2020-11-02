@@ -14,6 +14,8 @@ Outputs contain data that are modified from the input data, the report, and supp
 
 Scripts contain R scripts that take inputs and outputs and produce outputs. These are: 
 
+-01-bayesian_model.R
+
 -01-data_cleaning-survey.R
 
 -01-data_cleaning-post-strat.R
