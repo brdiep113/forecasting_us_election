@@ -9,7 +9,8 @@ Inputs contain data that are unchanged from their original source. We use two da
 Outputs contain data that are modified from the input data, the report, and supporting material.
 
 -Model: containing the Bayesian Multilevel Logistic model made with the cleaned data
--post_stratified_csv: containing 
+
+-post_stratified_csv: containing independent variable data after poststratification
 
 Scripts contain R scripts that take inputs and outputs and produce outputs. These are: 
 
