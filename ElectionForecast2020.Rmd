@@ -16,6 +16,8 @@ library(skimr)
 library(usmap)
 library(ggplot2)
 ```
+## Keywords
+BIDEN, TRUMP, 2020 US ELECTION, FORECASTING, MULTILEVEL REGRESSION WITH POSTSTRATIFICATION
 
 ## Abstract
 
