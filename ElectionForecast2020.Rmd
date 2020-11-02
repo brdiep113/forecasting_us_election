@@ -15,7 +15,10 @@ library(here)
 library(skimr)
 library(usmap)
 library(ggplot2)
+library(RColorBrewer)
 ```
+
+
 ## Keywords
 BIDEN, TRUMP, 2020 US ELECTION, FORECASTING, MULTILEVEL REGRESSION WITH POSTSTRATIFICATION
 
@@ -59,7 +62,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 
 ```{r Prepare_data, echo = FALSE}
-reduced_data <-survey_data
+reduced_data <- survey_data
 data <- survey_data
 
 #Amalgamate ethnicities to match census 
@@ -175,29 +178,6 @@ votes <- Electoral_votes_by_state %>%
 
 ```
 
-```{r WinElectoralVotes, echo=FALSE}
-#This chunk of code goes through the Electoral_votes_by_state data and sees who wins that state's electoral votes
-
-x <- 1
-Electoral_votes_Biden = 0
-Electoral_votes_Trump = 0 
-
-while (x<52) {
-  ifelse(votes[x,2] > votes[x,3],
-         Electoral_votes_Biden <- Electoral_votes_Biden + votes[x,1],
-         Electoral_votes_Trump <- Electoral_votes_Trump + votes[x,1])
-  x = x+1
-}
-
-tibble("Number of Electoral Votes for Biden" = 
-         Electoral_votes_Biden$`Number of Votes`,
-       "Number of Electoral Votes for Trump" = 
-         Electoral_votes_Trump$`Number of Votes`)
-
-
-#Who ever gets 270 or more electoral votes win
-```
-
 
 ```{r CensusAnalysis, echo=FALSE}
 census_data %>% 
@@ -242,9 +222,144 @@ pie(table(census_data$employment), main = "Employment Status")
 pie(table(census_data$household_income), main = "Household income")
 ```
 
+
 ## Model
+```{r model, echo=FALSE}
+
+# Fit Bayesian model
+model_states <- brm(vote_2020 ~ gender + age + household_income +
+                    race_ethnicity + hispanic + employment,
+                    data = survey_data,
+                    family = bernoulli(),
+                    file = "outputs/model/brms_model_states5",
+                    chains=6
+                    )
+
+model <- read_rds("outputs/model/brms_model_states5.rds")
+
+# Increase memory allocated to R
+memory.limit(size=80000)
+
+pop_vote <- plyr::count(census_data, c("state", "gender", "age",
+                                       "race_ethnicity", "hispanic",
+                                       "household_income", "employment"))
+
+# Do post stratification
+pop_vote <- pop_vote %>%
+  group_by(state) %>%
+  mutate(prop = freq / sum(freq)) %>%
+  ungroup()
+
+post_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(state, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(state) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+# Winner takes all, convert all > 0.5 Biden vote predictions into binary
+# response
+post_stratified_estimates <- post_stratified_estimates %>%
+  mutate(winner = ifelse(mean > 0.5, 1, 0))
+```
+
 
 ## Results
+
+```{r graph_confidence_intervals compared to raw data, echo=FALSE, fig.height=6, fig.width=16}
+
+# Clean raw data to be graphed
+a <- survey_data %>%
+  group_by(state, vote_2020) %>%
+  summarise(n = n())
+
+a <- a %>% group_by(state) %>%
+  mutate(prop = n/sum(n))
+
+a <- a %>% 
+  filter(vote_2020 == 1)
+
+post_stratified_estimates %>%
+  ggplot(aes(y = mean, x = forcats::fct_inorder(state), color = "MRP estimate")) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  ylab("Proportion voting for Biden") +
+  xlab("State") +
+  geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(state), color = "Raw data")) +
+  scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
+  theme_bw(base_size = 14) +
+  ggtitle("Figure X: Proportion of Votes for Biden by State")
+
+```
+
+```{r WinElectoralVotes, echo=FALSE}
+#This chunk of code goes through the Electoral_votes_by_state data and sees who wins that state's electoral votes
+
+#creates table of states, number of electoral votes for that state, votes for biden and votes for trump
+Electoral_votes_by_state <- matrix(c(3,9,6,11,55,9,7,3,3,29,16,4,6,4,20,11,
+                                     6,8,8,11,10,4,16,10,10,6,3,15,3,5,4,14,
+                                     5,6,29,18,7,7,20,4,9,3,11,38,6,13,3,12,10,5,3),
+                                   ncol=1, byrow=TRUE)
+rownames(Electoral_votes_by_state) <- c("AK","AL","AR","AZ","CA","CO","CT","DC","DE",
+                                        "FL","GA","HI","IA","ID","IL","IN","KS","KY",
+                                        "LA","MA","MD","ME","MI","MN","MO","MS","MT",
+                                        "NC","ND","NE","NH","NJ","NM","NV","NY","OH",
+                                        "OK","OR","PA","RI","SC","SD","TN","TX","UT",
+                                        "VA","VT","WA","WI","WV","WY")
+colnames(Electoral_votes_by_state) <- "Number of Votes"
+
+x <- 1
+Biden_votes = 0
+Trump_votes = 0
+
+while (x<52) {
+  ifelse(post_stratified_estimates$winner[x] == 1,
+         Biden_votes <- 
+           Biden_votes + Electoral_votes_by_state[x],
+         Trump_votes <- 
+           Trump_votes + Electoral_votes_by_state[x])
+  x = x+1
+}
+
+#Who ever gets 270 or more electoral votes win
+```
+
+```{r electoral map, echo=FALSE}
+statebins::statebins(state_data = post_stratified_estimates, state_col = "state",
+                     value_col = "mean", brew_pal = "Blues") + theme(axis.line=element_blank(),axis.text.x=element_blank(),
+          axis.text.y=element_blank(),axis.ticks=element_blank(),
+          axis.title.x=element_blank(),
+          axis.title.y=element_blank(),legend.position="none",
+          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),plot.background=element_blank())
+```
+
+```{r electoral map winners, echo=FALSE}
+
+# Graph electoral college
+electoral_map <- post_stratified_estimates %>%
+  mutate(value = ifelse(winner == 0, "Trump", "Biden")) %>%
+  statebins::statebins(font_size=4, dark_label = "white", light_label = "white",
+    ggplot2_scale_function = scale_fill_manual,
+    name = "Winner",
+    values = c(Biden = "#2166ac", Trump = "#b2182b")) + theme(
+      panel.background=element_blank(), axis.line=element_blank(),
+      axis.text.x=element_blank(), axis.text.y=element_blank(),
+      axis.ticks=element_blank(), axis.title.x=element_blank(),
+      axis.title.y=element_blank()
+    ) +
+  labs(title="Figure X: 2020 US Election Electoral College Predictions")
+
+electoral_map
+```
+```{r}
+
+```
+
 
 ## Discussion
 

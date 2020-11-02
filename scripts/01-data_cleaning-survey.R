@@ -135,34 +135,3 @@ survey_data <-
     employment %in% c("Homemaker", "Retired", "Permanently disabled", "Student") ~ "Not in labour force",
     employment %in% c("Unemployed or temporarily on layoff") ~ "Unemployed"
   ))
-
-model_states <- brm(vote_2020 ~ gender + age + household_income +
-                    race_ethnicity + hispanic + employment,
-                    data = survey_data, 
-                    family = bernoulli(),
-                    file = "outputs/model/brms_model_states5",
-                    chains=6
-                    )
-
-model <- read_rds("outputs/model/brms_model_states5.rds")
-summary(model)
-
-pop_vote <- plyr::count(census_data, c("state", "gender", "age",
-                                       "race_ethnicity", "hispanic",
-                                       "household_income", "employment"))
-
-pop_vote <- pop_vote %>%
-  group_by(state) %>%
-  mutate(prop = freq / sum(freq)) %>%
-  ungroup()
-
-post_stratified_estimates <- model %>%
-  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
-  rename(biden_predict =.prediction) %>%
-  mutate(biden_predict_prop =biden_predict*prop) %>%
-  group_by(state, .draw) %>% 
-  summarise(biden_predict =sum(biden_predict_prop)) %>%
-  group_by(state) %>%
-  summarise(mean =mean(biden_predict),
-            lower = quantile(biden_predict, 0.025), 
-            upper = quantile(biden_predict, 0.975))
