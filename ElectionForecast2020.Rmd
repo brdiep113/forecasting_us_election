@@ -60,52 +60,45 @@ reduced_data <-survey_data
 data <- survey_data
 ethnicity <-table(data$vote_2020, data$race_ethnicity)
 #Create a plot of how ethnicities tend to vote
-barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
+barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Figure 1. Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
 ```
+Ethnicities, as shown by the Nationscape data, tend to favour the democratic candidate, Joe Biden. White voters on the other hand, appear to be planning their vote for Trump
 ```{r genderplot, echo=FALSE}
 #Make graph comparing voting habits of male and female voteds
 gen_vote<-table(reduced_data$gender, reduced_data$vote_2020)
 col = c("red","blue")
-barplot(gen_vote, names.arg=c("Donald Trump", "Joe Biden"), beside = TRUE, legend.text = TRUE, col = col, border = "white", main="How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
+barplot(gen_vote, names.arg=c("Donald Trump", "Joe Biden"), beside = TRUE, legend.text = TRUE, col = col, border = "white", main="Figure 2. How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
 ```
+Another trend that the Nationscape data demonstrates is that female voters tend to prefer Joe Biden over Donald Trump. Male voters planned to vote the other way and support the incumbent president.
 
 ```{r ageplot, echo=FALSE}
 gen_vote<-table(data$vote_2020, data$age)
-barplot(gen_vote, beside = TRUE, legend.text = c("Donald Trump", "Joe Biden"), col = col, border = "white", main="How Respondents Plan to Vote in 2020 By Age Group", ylab="Number of respondents", xlab="Age Groups in Years", cex.names = 0.7)
+barplot(gen_vote, beside = TRUE, legend.text = c("Donald Trump", "Joe Biden"), col = col, border = "white", main="Figure 3. How Respondents Plan to Vote in 2020 By Age Group", ylab="Number of respondents", xlab="Age Groups in Years", cex.names = 0.7)
 ```
+Before 35 years of age, the voter preference strongly prefers Joe Biden. Respondents over this age seem to slightly prefer Donald Trump but some age groups are too close to call. 
 
-```{r votecompare}
-#Filter Data for Donald Trump Voters in 2016
-vote_compareD <-filter(data, vote_2016=="Donald Trump")
-vote_compareD <-table(vote_compareD$vote_2020)
-
-#Filter Data for Hillary Clinton Voters in 2016
-vote_compareHi <-filter(data, vote_2016=="Hillary Clinton")
-vote_compareH <-table(vote_compareHi$vote_2020)
-
-par(mfrow = c(1:2))
-barplot(vote_compareD, names.arg=c("Donald Trump", "Joe Biden"), col = col, cex.names = 0.7, xlab="Voted for Trump in 2016", legend.text = c("Donald Trump", "Joe Biden"))
-barplot(vote_compareH, names.arg=c("Donald Trump", "Joe Biden"), col= col, cex.names = 0.7, xlab="Voted for Clinton in 2016", legend.text = c("Donald Trump", "Joe Biden"))
-```
 ```{r partyassoc, echo=FALSE}
 vote_D <-filter(reduced_data, vote_2020=="0")
 ideo <-table(vote_D$ideo5)
-pie(ideo, main="Political Party Association of Respondents Voting for Donald Trump")
+pie(ideo, main="Figure 4. Political Party Association of Respondents Voting for Donald Trump")
 vote_J <-filter(reduced_data, vote_2020=="1")
 ideoJ <-table(vote_J$ideo5)
 
-pie(ideo, main="Political Party Association of Respondents Voting for Donald Trump")
-pie(ideoJ, main="Political Party Association of Respondents Voting for Joe Biden")
+
+pie(ideoJ, main=" Figure 5. Political Party Association of Respondents Voting for Joe Biden")
 
 ```
+Not much crossing of party lines appears to be happening with the Nationscape data. Most of those who plan to vote for Biden range from very liberal to moderate. Likewise, respondents who consider themselves very conservative, conservative or moderate will be voting for Trump.
+
 ```{r income, echo=FALSE}
 vote_D <-filter(reduced_data, vote_2020=="0")
 vote_J <-filter(reduced_data, vote_2020=="1")
 income <-rbind(table(vote_J$household_income), table(vote_D$household_income))
 par(las=2)
-barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
+barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Figure 6. Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
 
 ```
+Income has also shown to be associated with voter preference with our Nationscape data. Lower incomes (those close to the poverty line or minimum wage earners) plan to strongly support Joe Biden. The Democratic Party continues to lead in all income levels (although more modestly) up until six figure earners where respondents flip and plan to vote for Trump. 
 
 ```{r, echo=FALSE}
 states <-rbind(table(vote_J$state), table(vote_D$state))
