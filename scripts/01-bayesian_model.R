@@ -51,6 +51,13 @@ state_post_stratified_estimates <- model %>%
             lower = quantile(biden_predict, 0.025),
             upper = quantile(biden_predict, 0.975))
 
+# Winner takes all, convert all > 0.5 Biden vote predictions into binary
+# response
+state_post_stratified_estimates <- state_post_stratified_estimates %>%
+  mutate(winner = ifelse(mean > 0.5, 1, 0))
+
+write_csv(state_post_stratified_estimates, "outputs/post_stratified_csv/state_post_stratified_data.csv")
+
 pop_vote$prop <- NULL
 
 # (gender)
@@ -69,6 +76,8 @@ gender_stratified_estimates <- model %>%
   summarise(mean =mean(biden_predict),
             lower = quantile(biden_predict, 0.025),
             upper = quantile(biden_predict, 0.975))
+
+write_csv(gender_stratified_estimates, "outputs/post_stratified_csv/gender_post_stratified_data.csv")
 
 pop_vote$prop <- NULL
 
@@ -89,6 +98,8 @@ race_stratified_estimates <- model %>%
             lower = quantile(biden_predict, 0.025),
             upper = quantile(biden_predict, 0.975))
 
+write_csv(race_stratified_estimates, "outputs/post_stratified_csv/race_post_stratified_data.csv")
+
 pop_vote$prop <- NULL
 
 # (hispanic)
@@ -108,13 +119,100 @@ hispanic_stratified_estimates <- model %>%
             lower = quantile(biden_predict, 0.025),
             upper = quantile(biden_predict, 0.975))
 
-
-# Winner takes all, convert all > 0.5 Biden vote predictions into binary
-# response
-state_post_stratified_estimates <- state_post_stratified_estimates %>%
-  mutate(winner = ifelse(mean > 0.5, 1, 0))
-
-write_csv(state_post_stratified_estimates, "outputs/post_stratified_csv/state_post_stratified_data.csv")
-write_csv(gender_stratified_estimates, "outputs/post_stratified_csv/gender_post_stratified_data.csv")
-write_csv(race_stratified_estimates, "outputs/post_stratified_csv/race_post_stratified_data.csv")
 write_csv(hispanic_stratified_estimates, "outputs/post_stratified_csv/hispanic_post_stratified_data.csv")
+
+pop_vote$prop <- NULL
+
+# (income)
+pop_vote <- pop_vote %>%
+  group_by(household_income) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+income_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(household_income, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(household_income) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+write_csv(income_stratified_estimates, "outputs/post_stratified_csv/income_post_stratified_data.csv")
+
+# (employment_status)
+pop_vote <- pop_vote %>%
+  group_by(employment) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+employment_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(employment, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(employment) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+write_csv(employment_stratified_estimates, "outputs/post_stratified_csv/employment_post_stratified_data.csv")
+
+# (employment_status)
+pop_vote <- pop_vote %>%
+  group_by(employment) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+employment_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(employment, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(employment) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+write_csv(employment_stratified_estimates, "outputs/post_stratified_csv/employment_post_stratified_data.csv")
+
+# (age)
+pop_vote <- pop_vote %>%
+  group_by(age) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+age_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(age, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(age) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+write_csv(age_stratified_estimates, "outputs/post_stratified_csv/age_post_stratified_data.csv")
+
+# (everything)
+pop_vote <- pop_vote %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+fullpop_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(state, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(state) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+write_csv(fullpop_stratified_estimates, "outputs/post_stratified_csv/full_post_stratified_data.csv")
