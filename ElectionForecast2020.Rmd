@@ -254,7 +254,7 @@ summary(model)
 
 ## Results
 
-```{r graph_state_intervals, echo=FALSE, message=FALSE, fig.height=10, fig.width=16}
+```{r graph_state_intervals, echo=FALSE, message=FALSE, fig.height=8, fig.width=16}
 
 post_stratified_estimates <- read_csv("post_stratified_data.csv")
 # Clean raw data to be graphed
@@ -282,8 +282,10 @@ suppressMessages(post_stratified_estimates %>%
 
 ```
 
+After fitting our Bayesian multilevel regression model with poststratification, we find that Biden is at an advantage for winning the election. We see in Figure X above, where we plot the predicted proportion of Biden votes in each state according to our estimate from MRP, as well as the raw estimate according to the survey. In particular we plot the mean of the predicted proportion of Biden votes among voters and the 95% credibility interval. We notice that the raw estimate of Biden proportions does not well represent the estimate after MRP in many cases, especially in states that have small sample sizes.
 
-```{r graph_gender_votes, echo=FALSE, message=FALSE}
+
+```{r graph_gender_votes, echo=FALSE, message=FALSE, fig.height=3}
 
 # Read in post stratified data
 gender_stratified_estimates <- read_csv("gender_post_stratified_data.csv")
@@ -308,9 +310,41 @@ suppressMessages(gender_stratified_estimates %>%
   geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(gender), color = "Raw data")) +
   scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
   geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue") +
-  theme_bw(base_size = 14))
+  theme_bw(base_size = 12))
 
 ```
+
+```{r age stratified, echo=FALSE, message=FALSE, fig.width=8}
+# Read in age stratified data
+age_stratified_estimates <- read_csv("outputs/post_stratified_csv/age_post_stratified_data.csv")
+# Clean raw data to be graphed
+a <- survey_data %>%
+  group_by(age, vote_2020) %>%
+  summarise(n = n())
+
+a <- a %>% group_by(age) %>%
+  mutate(prop = n/sum(n))
+
+a <- a %>% 
+  filter(vote_2020 == 1)
+
+suppressMessages(age_stratified_estimates %>%
+  ggplot(aes(y = mean, x = forcats::fct_inorder(age), color = "MRP estimate")) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  ylab("Proportion voting for Biden") +
+  xlab("Age") +
+  labs(title = "Figure X: Proportion of Votes for Biden by Age") +
+  geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(age), color = "Raw data")) +
+  scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
+  geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue") +
+  theme_bw(base_size = 14))
+
+
+```
+
+We also plot similar confidence intervals for voters after poststratification based on the other categories such as gender, income, age, race, and employment status. Based on gender in Figure X, we find that women are more likely to vote for the Democrats as opposed to men. We also see based on age in Figure Y that younger voters under the age of 34 tend to vote Democratic and those above that threshold are more likely to vote Republican.
+
 
 ```{r race stratified, echo=FALSE, message=FALSE, fig.width=8}
 # Read in race stratified data
@@ -361,13 +395,17 @@ suppressMessages(hispanic_stratified_estimates %>%
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
   ylab("Proportion voting for Biden") +
   xlab("Hispanic") +
-  labs(title = "Figure X: Proportion of Votes for Biden by Race/Ethnicity") +
+  labs(title = "Figure X: Proportion of Votes for Biden by Hispanic Heritage") +
   geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(hispanic), color = "Raw data")) +
   scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
   geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue") +
   theme_bw(base_size = 14))
 
 ```
+
+
+We find in Figure Y that in terms of race, self-identified Hispanic individuals are much less likely to vote for Trump as compared to their non-Hispanic counterparts. As for race in Figure Z, white Americans and native Americans are the only two racial groups that are more likely to vote for Trump than Biden. However one thing of note, the credibility interval for native Americans is much larger than the one for white Americans. We also see that black Americans vote overwhelmingly for Biden whereas voters of Asian/Pacific Islander descent as those self-identified as mixed or other racial groups skew towards the Democrats to a smaller degree.
+
 
 ```{r income stratified, echo=FALSE, message=FALSE, fig.width=8}
 
@@ -431,34 +469,7 @@ suppressMessages(employment_stratified_estimates %>%
 
 
 ```
-```{r age stratified, echo=FALSE, message=FALSE, fig.width=8}
-# Read in age stratified data
-age_stratified_estimates <- read_csv("outputs/post_stratified_csv/age_post_stratified_data.csv")
-# Clean raw data to be graphed
-a <- survey_data %>%
-  group_by(age, vote_2020) %>%
-  summarise(n = n())
-
-a <- a %>% group_by(age) %>%
-  mutate(prop = n/sum(n))
-
-a <- a %>% 
-  filter(vote_2020 == 1)
-
-suppressMessages(age_stratified_estimates %>%
-  ggplot(aes(y = mean, x = forcats::fct_inorder(age), color = "MRP estimate")) +
-  geom_point() +
-  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
-  ylab("Proportion voting for Biden") +
-  xlab("Age") +
-  labs(title = "Figure X: Proportion of Votes for Biden by Age") +
-  geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(age), color = "Raw data")) +
-  scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
-  geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue") +
-  theme_bw(base_size = 14))
-
-
-```
+When we examine voter preferences in terms of economic status, those who are unemployed or not in the labour force tend to swing towards Biden and the Democrats whereas the Republicans are favoured by those who are actively employed. We also find a clear trend that as an individual's household income increases, they are more likely to vote for the Republican Party.
 
 
 ```{r WinElectoralVotes, echo=FALSE}
@@ -511,7 +522,10 @@ post_stratified_estimates %>%
     )
 ```
 
-```{r popular vote, echo=FALSE, message=FALSE}
+
+Combining all of this data using poststratification to adjust for the relative proportion of each group. Our model predicts that we have Biden narrowly winning the popular vote with almost 50.4% of all ballots cast nationally.
+
+```{r popular vote, include=FALSE, echo=FALSE, message=FALSE}
 # Read in full post stratified data
 full_stratified_estimates <- read_csv("outputs/post_stratified_csv/full_post_stratified_data.csv")
 
@@ -539,10 +553,8 @@ electoral_map <- post_stratified_estimates %>%
 electoral_map
 ```
 
-```{r}
-
-```
-
+  However, since the U.S. election is decided by the electoral college and not by a national popular vote, we must examine which states each candidate achieved a plurality. For the vast majority of states, the winner of the popular vote in each state is awarded all of the state's electoral college votes. For our analysis, we assume that Biden will win any states where the mean proportion of Biden voters is greater than 50% and that Trump will win the remaining states. As seen in Figure Y, we predict that Biden will win a lot of the American South, the East, Hawaii and California whereas Trump is predicted to win much of New England, Midwest, Alaska and the Western U.S. 
+  When we sum up the weight of these states and their electoral votes we predict Biden to win 284 electoral college votes to Trump's 254. 
 
 ## Discussion
 
