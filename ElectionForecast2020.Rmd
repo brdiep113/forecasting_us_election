@@ -1,7 +1,7 @@
 ---
 title: "ElectionForecast2020"
-author: "Brian Diep"
-date: "25/10/2020"
+author: "Jin Long Cao, Brian Diep, Johnathan Tillman, Tanya Woloshansky"
+date: "2/11/2020"
 output: pdf_document
 ---
 
@@ -55,27 +55,10 @@ When you click the **Knit** button a document will be generated that includes bo
 
 
 
-```{r Prepare_data, echo = FALSE}
-reduced_data <- survey_data
-data <- survey_data
-
-#Amalgamate ethnicities to match census 
-Asian<-filter(data, race_ethnicity %in% c("Asian (Japanese)", "Asian (Japanese)", "Asian (Other)","Asian (Chinese)", "Asian (Korean)", "Asian (Filipino)", "Asian (Vietnamese)"))
-Asian$race_ethnicity <- "Asian"
-White<-filter(data, race_ethnicity %in% c("White"))
-Black_AA<-filter(data, race_ethnicity %in% c("Black, or African American"))
-Pacific_Islander <-filter(data, race_ethnicity %in% c("Pacific Islander (Samoan)", "Pacific Islander (Native Hawaiian)", "Pacific Islander (Other)","Pacific Islander (Guamanian)"))
-Pacific_Islander$race_ethnicity <- "Pacific Islander"
-
-Indigenous<-filter(data, race_ethnicity %in% c("American Indian or Alaska Native"))
-Indigenous$race_ethnicity <- "Indigenous"
-Other<-filter(data, race_ethnicity %in% c("Some other race"))
-South_Asian<-filter(data, race_ethnicity %in% c("Asian (Asian Indian)"))
-South_Asian$race_ethnicity <- "South Asian"
-data2 <-rbind(Asian, White, Black_AA, Pacific_Islander, Indigenous, South_Asian, Other)
-ethnicity <-table(data2$vote_2020, data2$race_ethnicity)
-```
 ```{r race_association, echo = FALSE}
+reduced_data <-survey_data
+data <- survey_data
+ethnicity <-table(data$vote_2020, data$race_ethnicity)
 #Create a plot of how ethnicities tend to vote
 barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
 ```
@@ -83,7 +66,7 @@ barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Respondents Voting Habits
 #Make graph comparing voting habits of male and female voteds
 gen_vote<-table(reduced_data$gender, reduced_data$vote_2020)
 col = c("red","blue")
-barplot(gen_vote, beside = TRUE, legend.text = TRUE, col = col, border = "white", main="How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
+barplot(gen_vote, names.arg=c("Donald Trump", "Joe Biden"), beside = TRUE, legend.text = TRUE, col = col, border = "white", main="How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
 ```
 
 ```{r ageplot, echo=FALSE}
@@ -101,8 +84,8 @@ vote_compareHi <-filter(data, vote_2016=="Hillary Clinton")
 vote_compareH <-table(vote_compareHi$vote_2020)
 
 par(mfrow = c(1:2))
-barplot(vote_compareD, col = "red", cex.names = 0.7, xlab="Voted for Trump in 2016", legend.text = c("Donald Trump", "Joe Biden"))
-barplot(vote_compareH, col="blue", cex.names = 0.7, xlab="Voted for Clinton in 2016", legend.text = c("Donald Trump", "Joe Biden"))
+barplot(vote_compareD, names.arg=c("Donald Trump", "Joe Biden"), col = col, cex.names = 0.7, xlab="Voted for Trump in 2016", legend.text = c("Donald Trump", "Joe Biden"))
+barplot(vote_compareH, names.arg=c("Donald Trump", "Joe Biden"), col= col, cex.names = 0.7, xlab="Voted for Clinton in 2016", legend.text = c("Donald Trump", "Joe Biden"))
 ```
 ```{r partyassoc, echo=FALSE}
 vote_D <-filter(reduced_data, vote_2020=="0")
