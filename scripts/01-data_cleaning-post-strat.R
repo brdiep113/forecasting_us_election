@@ -193,3 +193,5 @@ names(census_data)[names(census_data) == "sex"] <- "gender"
 census_data <-
   census_data %>%
   mutate(gender = ifelse(gender == "male", "Male", "Female"))
+
+write_csv(census_data, "census_data.csv")

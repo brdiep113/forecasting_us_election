@@ -14,10 +14,6 @@
 #### Workspace setup ####
 library(haven)
 library(tidyverse)
-library(broom)
-library(brms) # Used for the modelling
-library(here)
-library(tidybayes) # Used to help understand the modelling estimates
 
 # Read in the raw data (You might need to change this if you use a different dataset)
 raw_data <- read_dta("inputs/data/ns20200625/ns20200625.dta")
@@ -45,6 +41,12 @@ survey_data <-
 rm(raw_data)
 
 # Filter out third-party and non-voters
+
+survey_data <-
+  survey_data %>%
+  filter(vote_intention %in% c("Yes, I will vote", "Not sure", 
+                               "No, I will not vote but I am eligible"))
+
 survey_data <-
   survey_data %>% 
   filter(vote_2020 %in% c('Joe Biden', 'Donald Trump'))
@@ -135,3 +137,5 @@ survey_data <-
     employment %in% c("Homemaker", "Retired", "Permanently disabled", "Student") ~ "Not in labour force",
     employment %in% c("Unemployed or temporarily on layoff") ~ "Unemployed"
   ))
+
+write_csv(survey_data, "survey_data.csv")

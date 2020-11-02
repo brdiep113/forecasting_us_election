@@ -11,11 +11,16 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(broom)
+library(brms)
 library(here)
 library(skimr)
 library(usmap)
 library(ggplot2)
 library(RColorBrewer)
+
+# Download datasets and run scripts first to get these csv files
+census_data <- read_csv("census_data.csv")
+survey_data <- read_csv("survey_data.csv")
 ```
 
 
@@ -28,23 +33,12 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
-
 ## Introduction
 
 	The 2020 presidential election in America has been hotly discussed throughout the campaign season as the country appears divided on many key issues such as climate change, gun control, handling of the coronavirus, immigration and more. While election polls ideally predict the outcome of the election, information can also be derived regarding how respondents feel about important issues. Data from the Democracy Fund and the UCLA Nationscape was used to produce a model to help understand what demographic factors of respondents predicted their voting. 
 	
 	
 	Using binary logistical regression, key demographic factors such as age, race/ethnicity, income, gender and state showed significantly relation to election outcomes. In particular, voters for Joe Biden were more likely to be younger, female, with income less than a hundred thousand dollars per year and from blue states (states more likely to vote democrat). Older, white males, who made over a hundred thousand dollars per year, were more likely to vote for republican candidate Donald Trump.  Using this model, a simulation was run on data provided by the American Census Survey for 2018. If everyone in the survey were to vote, it would appear as if Joe Biden is the winner (??? Not sure because we haven’t run the simulation but hopeful thinking)
-
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ## Data
 ## Nationscape Data
@@ -231,11 +225,11 @@ model_states <- brm(vote_2020 ~ gender + age + household_income +
                     race_ethnicity + hispanic + employment,
                     data = survey_data,
                     family = bernoulli(),
-                    file = "outputs/model/brms_model_states5",
+                    file = "outputs/model/brms_model_states8",
                     chains=6
                     )
 
-model <- read_rds("outputs/model/brms_model_states5.rds")
+model <- read_rds("outputs/model/brms_model_states8.rds")
 
 # Increase memory allocated to R
 memory.limit(size=80000)
@@ -291,6 +285,7 @@ post_stratified_estimates %>%
   xlab("State") +
   geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(state), color = "Raw data")) +
   scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
+  geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue")
   theme_bw(base_size = 14) +
   ggtitle("Figure X: Proportion of Votes for Biden by State")
 
