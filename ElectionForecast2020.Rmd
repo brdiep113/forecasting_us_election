@@ -211,6 +211,16 @@ plot_usmap(data=pop, regions="states", values="n", color="black") +
   labs(title = "Figure X: Responses by State", caption = "Source: ACS 2018")
 ```
 
+```{r income distribution by state from census, echo=FALSE}
+par(las=2)
+colcol = c("grey", "grey2", "steelblue", "steelblue2", "steelblue3", "steelblue4")
+barplot(table(census_data$household_income, census_data$state), cex.names = 0.5, col = colcol, main ="Estimates of Income Stratification By State")
+legend("topright", 
+       legend = c("Upper Middle Income", "Under Poverty Line", "Lower Middle Income", "Low Income", "High Income", "Very High Income"), 
+       fill = colcol, ncol = 2,
+       cex = 0.75)
+```
+
 ```{r hispanic_distribution, echo=FALSE}
 
 # Graph distribution of Hispanic population in U.S.A.
