@@ -8,8 +8,8 @@ Inputs contain data that are unchanged from their original source. We use two da
 
 Outputs contain data that are modified from the input data, the report, and supporting material.
 
--X,
--Y
+-model
+-
 
 Scripts contain R scripts that take inputs and outputs and produce outputs. These are: 
 
