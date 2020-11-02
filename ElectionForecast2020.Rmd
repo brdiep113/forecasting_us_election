@@ -68,17 +68,7 @@ When mining for important variables, there were many categories where the questi
 
 ```{r Prepare_data, echo = FALSE}
 reduced_data <-survey_data
-data <-filter(reduced_data, vote_2020 %in% c('Joe Biden', 'Donald Trump'))
-data$vote_2020<-ifelse(data$vote_2020=="Donald Trump", 0, 1)
-data<-data %>%
-mutate(age = case_when(
-    between(age, 0, 24) ~ "0-24",
-    between(age, 25, 34) ~ "25-34",
-    between(age, 35, 44) ~ "35-44",
-    between(age, 45, 54) ~ "45-54",
-    between(age, 55, 64) ~ "55-64",
-    between(age, 65, 74) ~ "65-74",
-    between(age, 75, Inf) ~ "75+"))
+data <- survey_data
 
 #Amalgamate ethnicities to match census 
 Asian<-filter(data, race_ethnicity %in% c("Asian (Japanese)", "Asian (Japanese)", "Asian (Other)","Asian (Chinese)", "Asian (Korean)", "Asian (Filipino)", "Asian (Vietnamese)"))
@@ -126,10 +116,10 @@ barplot(vote_compareD, col = "red", cex.names = 0.7, xlab="Voted for Trump in 20
 barplot(vote_compareH, col="blue", cex.names = 0.7, xlab="Voted for Clinton in 2016", legend.text = c("Donald Trump", "Joe Biden"))
 ```
 ```{r partyassoc, echo=FALSE}
-vote_D <-filter(reduced_data, vote_2020=="Donald Trump")
+vote_D <-filter(reduced_data, vote_2020=="0")
 ideo <-table(vote_D$ideo5)
 pie(ideo, main="Political Party Association of Respondents Voting for Donald Trump")
-vote_J <-filter(reduced_data, vote_2020=="Joe Biden")
+vote_J <-filter(reduced_data, vote_2020=="1")
 ideoJ <-table(vote_J$ideo5)
 
 pie(ideo, main="Political Party Association of Respondents Voting for Donald Trump")
@@ -137,8 +127,8 @@ pie(ideoJ, main="Political Party Association of Respondents Voting for Joe Biden
 
 ```
 ```{r income, echo=FALSE}
-vote_D <-filter(reduced_data, vote_2020=="Donald Trump")
-vote_J <-filter(reduced_data, vote_2020=="Joe Biden")
+vote_D <-filter(reduced_data, vote_2020=="0")
+vote_J <-filter(reduced_data, vote_2020=="1")
 income <-rbind(table(vote_J$household_income), table(vote_D$household_income))
 par(las=2)
 barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
