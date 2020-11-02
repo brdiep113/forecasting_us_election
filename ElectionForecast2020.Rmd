@@ -438,7 +438,8 @@ suppressMessages(income_stratified_estimates %>%
   geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(household_income), color = "Raw data")) +
   scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
   geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue") +
-  theme_bw(base_size = 14))
+  theme_bw(base_size = 14)) +
+  theme(axis.text.x = element_text(angle = 90))
 
 
 ```
