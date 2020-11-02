@@ -158,15 +158,6 @@ votes <- Electoral_votes_by_state %>%
 
 ```{r CensusAnalysis, echo=FALSE}
 census_data %>% 
-  ggplot(aes(x=state)) +
-  geom_bar(fill='red', color='black')+
-  theme(axis.text.x=element_text(angle=90),panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
-  labs(x="States",
-       y="Number of Respondents",
-       title="Population in Each State")
-
-
-census_data %>% 
   ggplot(aes(x=gender)) +
   geom_bar(fill='red', color='black')+
   theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
@@ -199,49 +190,92 @@ pie(table(census_data$employment), main = "Employment Status")
 pie(table(census_data$household_income), main = "Household income")
 ```
 
+```{r population_distribution, echo=FALSE}
+# Graph rough population distribution based on census
+pop <- census_data %>%
+  group_by(state) %>%
+  summarise(n = n())
+
+pop <- pop %>%
+  rename(
+    fips = state,
+  )
+
+pop$fips <- fips(pop$fips)
+plot_usmap(data=pop, regions="states", values="n", color="black") +
+  scale_fill_continuous( low = "white", high = "blue", 
+                         name = "Responses", label = scales::comma
+  ) + 
+  theme(legend.position = "right") + 
+  theme(panel.background = element_rect(colour = "black")) + 
+  labs(title = "Figure X: Responses by State", caption = "Source: ACS 2018")
+```
+
+```{r hispanic_distribution, echo=FALSE}
+
+# Graph distribution of Hispanic population in U.S.A.
+b <- census_data %>%
+  group_by(state, hispanic) %>%
+  summarise(n = n())
+
+b <- b %>% group_by(state) %>%
+  mutate(n = n/sum(n))
+
+b <- b %>%
+  filter(hispanic == "Hispanic")
+
+b <- b %>% 
+  rename(
+    fips = state,
+    )
+
+b$fips <- fips(b$fips)
+b$hispanic <- NULL
+
+b$n = 100 * b$n
+
+plot_usmap(data=b, regions="states", values="n", color="black") +
+  scale_fill_continuous( low = "white", high = "orange", 
+                         name = "% Hispanic Responses", label = scales::comma
+  ) + 
+  theme(legend.position = "right") + 
+  theme(panel.background = element_rect(colour = "black")) + 
+  labs(title = "Figure X: Proportion of Hispanic Respondents", caption = "Source: ACS 2018")
+
+```
+
 
 ## Model
 ```{r model, echo=FALSE}
-
-# Fit Bayesian model
-model_states <- brm(vote_2020 ~ gender + age + household_income +
-                    race_ethnicity + hispanic + employment,
-                    data = survey_data,
-                    family = bernoulli(),
-                    file = "outputs/model/brms_model_states8",
-                    chains=6
-                    )
-
+post_stratified_estimates <- read_csv("post_stratified_data.csv")
 model <- read_rds("outputs/model/brms_model_states8.rds")
+summary(model)
 
-# Increase memory allocated to R
-memory.limit(size=80000)
+table <- c(1.21,
+           -0.34,
+           -0.38,
+           -0.63,
+           -0.79,
+           -0.60,
+           -0.55,
+           -0.81,
+           0.42,
+           0.),
+              round(summary(all_lm)$coefficients[2], digits = 4),
+              round(sigma(all_lm) ** 2, digits = 4),
+              round(summary(all_lm)$coefficients[,4][2], digits=4),
+              round(confint(all_lm, 'list', level=0.95)[1], digits = 4),
+              round(confint(all_lm, 'list', level=0.95)[2], digits = 4))
 
-pop_vote <- plyr::count(census_data, c("state", "gender", "age",
-                                       "race_ethnicity", "hispanic",
-                                       "household_income", "employment"))
+table_titles <- c("Intercept", "Gender<br/>Male", "Estimated<br/>Slope", "Estimated Variance<br/>Of Errors", "p-value for Slope Null<br/>Hypothesis Test", "Slope CI<br/>Lower Bound", "Slope CI<br/>Upper Bound")
 
-# Do post stratification
-pop_vote <- pop_vote %>%
-  group_by(state) %>%
-  mutate(prop = freq / sum(freq)) %>%
-  ungroup()
+table_rows <- c("Bayesian Model")
+colnames(table) <- table_titles
+rownames(table) <- table_rows
 
-post_stratified_estimates <- model %>%
-  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
-  rename(biden_predict =.prediction) %>%
-  mutate(biden_predict_prop =biden_predict*prop) %>%
-  group_by(state, .draw) %>%
-  summarise(biden_predict =sum(biden_predict_prop)) %>%
-  group_by(state) %>%
-  summarise(mean =mean(biden_predict),
-            lower = quantile(biden_predict, 0.025),
-            upper = quantile(biden_predict, 0.975))
 
-# Winner takes all, convert all > 0.5 Biden vote predictions into binary
-# response
-post_stratified_estimates <- post_stratified_estimates %>%
-  mutate(winner = ifelse(mean > 0.5, 1, 0))
+kbl(table, escape=FALSE) %>%
+  kable_material(c("striped", "hover"))
 ```
 
 
@@ -306,7 +340,7 @@ while (x<52) {
 #Who ever gets 270 or more electoral votes win
 ```
 
-```{r electoral map, echo=FALSE}
+```{r percent biden map, echo=FALSE}
 statebins::statebins(state_data = post_stratified_estimates, state_col = "state",
                      value_col = "mean", brew_pal = "Blues") + theme(axis.line=element_blank(),axis.text.x=element_blank(),
           axis.text.y=element_blank(),axis.ticks=element_blank(),
