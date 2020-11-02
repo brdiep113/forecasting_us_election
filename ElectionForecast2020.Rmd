@@ -207,6 +207,48 @@ tibble("Number of Electoral Votes for Biden" =
 ```
 
 
+```{r CensusAnalysis, echo=FALSE}
+census_data %>% 
+  ggplot(aes(x=state)) +
+  geom_bar(fill='red', color='black')+
+  theme(axis.text.x=element_text(angle=90),panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
+  labs(x="States",
+       y="Number of Respondents",
+       title="Population in Each State")
+
+
+census_data %>% 
+  ggplot(aes(x=gender)) +
+  geom_bar(fill='red', color='black')+
+  theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
+  labs(x="Gender",
+       y="Number of Respondents",
+       title="Gender Proportion in Census data")
+
+
+census_data %>% 
+  ggplot(aes(x=age)) +
+  geom_bar(fill='red', color='black')+
+  theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
+  labs(x="Age range",
+       y="Number of Respondents",
+       title="Age range in the US")
+
+
+pie(table(census_data$race_ethnicity), main = "Ethnicity")
+
+census_data %>% 
+  ggplot(aes(x=hispanic)) +
+  geom_bar(fill='red', color='black')+
+  theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
+  labs(x="Hispanic",
+       y="Number of Respondents",
+       title="Hispanic Proportion in Census data")
+
+pie(table(census_data$employment), main = "Employment Status")
+
+pie(table(census_data$household_income), main = "Household income")
+```
 
 ## Model
 
