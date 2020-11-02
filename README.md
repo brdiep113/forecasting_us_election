@@ -8,10 +8,11 @@ Inputs contain data that are unchanged from their original source. We use two da
 
 Outputs contain data that are modified from the input data, the report, and supporting material.
 
--model
+-Model: containing the Bayesian Multilevel Logistic model made with the cleaned data
 -
 
 Scripts contain R scripts that take inputs and outputs and produce outputs. These are: 
 
 -01-data_cleaning-survey.R
+
 -01-data_cleaning-post-strat.R
