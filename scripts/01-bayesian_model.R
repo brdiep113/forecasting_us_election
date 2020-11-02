@@ -34,13 +34,13 @@ pop_vote <- plyr::count(census_data, c("state", "gender", "age",
                                        "race_ethnicity", "hispanic",
                                        "household_income", "employment"))
 
-# Do post stratification
+# Do post stratification (state)
 pop_vote <- pop_vote %>%
   group_by(state) %>%
   mutate(prop = freq / sum(freq)) %>%
   ungroup()
 
-post_stratified_estimates <- model %>%
+state_post_stratified_estimates <- model %>%
   tidybayes::add_predicted_draws(newdata=pop_vote) %>%
   rename(biden_predict =.prediction) %>%
   mutate(biden_predict_prop =biden_predict*prop) %>%
@@ -51,9 +51,70 @@ post_stratified_estimates <- model %>%
             lower = quantile(biden_predict, 0.025),
             upper = quantile(biden_predict, 0.975))
 
+pop_vote$prop <- NULL
+
+# (gender)
+pop_vote <- pop_vote %>%
+  group_by(gender) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+gender_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(gender, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(gender) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+pop_vote$prop <- NULL
+
+# (race/ethnicity)
+pop_vote <- pop_vote %>%
+  group_by(race_ethnicity) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+race_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(race_ethnicity, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(race_ethnicity) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+pop_vote$prop <- NULL
+
+# (hispanic)
+pop_vote <- pop_vote %>%
+  group_by(hispanic) %>%
+  mutate(prop = freq/ sum(freq)) %>%
+  ungroup()
+
+hispanic_stratified_estimates <- model %>%
+  tidybayes::add_predicted_draws(newdata=pop_vote) %>%
+  rename(biden_predict =.prediction) %>%
+  mutate(biden_predict_prop =biden_predict*prop) %>%
+  group_by(hispanic, .draw) %>%
+  summarise(biden_predict =sum(biden_predict_prop)) %>%
+  group_by(hispanic) %>%
+  summarise(mean =mean(biden_predict),
+            lower = quantile(biden_predict, 0.025),
+            upper = quantile(biden_predict, 0.975))
+
+
 # Winner takes all, convert all > 0.5 Biden vote predictions into binary
 # response
-post_stratified_estimates <- post_stratified_estimates %>%
+state_post_stratified_estimates <- state_post_stratified_estimates %>%
   mutate(winner = ifelse(mean > 0.5, 1, 0))
 
-write_csv(post_stratified_estimates, "post_stratified_data.csv")
+write_csv(state_post_stratified_estimates, "outputs/post_stratified_csv/state_post_stratified_data.csv")
+write_csv(gender_stratified_estimates, "outputs/post_stratified_csv/gender_post_stratified_data.csv")
+write_csv(race_stratified_estimates, "outputs/post_stratified_csv/race_post_stratified_data.csv")
+write_csv(hispanic_stratified_estimates, "outputs/post_stratified_csv/hispanic_post_stratified_data.csv")

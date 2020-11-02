@@ -29,18 +29,16 @@ BIDEN, TRUMP, 2020 US ELECTION, FORECASTING, MULTILEVEL REGRESSION WITH POSTSTRA
 
 ## Abstract
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ## Introduction
 
 	The 2020 presidential election in America has been hotly discussed throughout the campaign season as the country appears divided on many key issues such as climate change, gun control, handling of the coronavirus, immigration and more. While election polls ideally predict the outcome of the election, information can also be derived regarding how respondents feel about important issues. Data from the Democracy Fund and the UCLA Nationscape was used to produce a model to help understand what demographic factors of respondents predicted their voting. 
 	
 	
-	Using binary logistical regression, key demographic factors such as age, race/ethnicity, income, gender and state showed significantly relation to election outcomes. In particular, voters for Joe Biden were more likely to be younger, female, with income less than a hundred thousand dollars per year and from blue states (states more likely to vote democrat). Older, white males, who made over a hundred thousand dollars per year, were more likely to vote for republican candidate Donald Trump.  Using this model, a simulation was run on data provided by the American Census Survey for 2018. If everyone in the survey were to vote, it would appear as if Joe Biden is the winner (??? Not sure because we haven’t run the simulation but hopeful thinking)
+	Using binary logistical regression, key demographic factors such as age, race/ethnicity, income, gender and state showed significantly relation to election outcomes. In particular, voters for Joe Biden were more likely to be younger, female, with income less than a hundred thousand dollars per year and from blue states (states more likely to vote democrat). Older, white males, who made over a hundred thousand dollars per year, were more likely to vote for republican candidate Donald Trump.  Using this model, a simulation was run on data provided by the American Census Survey for 2018. If everyone in the survey were to vote, it would appear as if Joe Biden is the winner (??? Not sure because we havenn'tt run the simulation but hopeful thinking)
 
 ## Data
+
 ## Nationscape Data
 
   The dataset we used for our analysis came from responses to the Nationscape survey. The survey is the result of a partnership between the Democracy Fund Voter Study Group and two Political Scientists at UCLA (Chris Tausanovitch and Lynn Vavreck). The Nationscape survey runs from July 2019 to December 2020, interviewing 6250 people per week for a total of 500,000 respondents. The population of interest for the study is everyone eligible to vote in the US and the population frame are all the respondents sent by the market research platform Lucid to the Nationscape team. The team sampled the respondents sent until a quota on different demographic groups of age, gender, ethnicity, region, income, and education were reached. 
@@ -251,38 +249,14 @@ post_stratified_estimates <- read_csv("post_stratified_data.csv")
 model <- read_rds("outputs/model/brms_model_states8.rds")
 summary(model)
 
-table <- c(1.21,
-           -0.34,
-           -0.38,
-           -0.63,
-           -0.79,
-           -0.60,
-           -0.55,
-           -0.81,
-           0.42,
-           0.),
-              round(summary(all_lm)$coefficients[2], digits = 4),
-              round(sigma(all_lm) ** 2, digits = 4),
-              round(summary(all_lm)$coefficients[,4][2], digits=4),
-              round(confint(all_lm, 'list', level=0.95)[1], digits = 4),
-              round(confint(all_lm, 'list', level=0.95)[2], digits = 4))
-
-table_titles <- c("Intercept", "Gender<br/>Male", "Estimated<br/>Slope", "Estimated Variance<br/>Of Errors", "p-value for Slope Null<br/>Hypothesis Test", "Slope CI<br/>Lower Bound", "Slope CI<br/>Upper Bound")
-
-table_rows <- c("Bayesian Model")
-colnames(table) <- table_titles
-rownames(table) <- table_rows
-
-
-kbl(table, escape=FALSE) %>%
-  kable_material(c("striped", "hover"))
 ```
 
 
 ## Results
 
-```{r graph_confidence_intervals compared to raw data, echo=FALSE, fig.height=6, fig.width=16}
+```{r graph_state_intervals, echo=FALSE, message=FALSE, fig.height=7, fig.width=16}
 
+post_stratified_estimates <- read_csv("post_stratified_data.csv")
 # Clean raw data to be graphed
 a <- survey_data %>%
   group_by(state, vote_2020) %>%
@@ -304,7 +278,66 @@ post_stratified_estimates %>%
   scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
   geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue")
   theme_bw(base_size = 14) +
-  ggtitle("Figure X: Proportion of Votes for Biden by State")
+  labs(title = "Figure X: Proportion of Votes for Biden by State")
+
+```
+
+
+```{r graph_gender_votes, echo=FALSE}
+
+# Read in post stratified data
+gender_stratified_estimates <- read_csv("gender_post_stratified_data.csv")
+# Clean raw data to be graphed
+a <- survey_data %>%
+  group_by(gender, vote_2020) %>%
+  summarise(n = n())
+
+a <- a %>% group_by(gender) %>%
+  mutate(prop = n/sum(n))
+
+a <- a %>% 
+  filter(vote_2020 == 1)
+
+gender_stratified_estimates %>%
+  ggplot(aes(y = mean, x = forcats::fct_inorder(gender), color = "MRP estimate")) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  ylab("Proportion voting for Biden") +
+  xlab("Gender") +
+  labs(title = "Figure X: Proportion of Votes for Biden by Gender") +
+  geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(gender), color = "Raw data")) +
+  scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
+  geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue")
+  theme_bw(base_size = 14)
+
+```
+
+```{r race stratified, echo=FALSE}
+# Read in race stratified data
+race_stratified_estimates <- read_csv("race_post_stratified_data.csv")
+# Clean raw data to be graphed
+a <- survey_data %>%
+  group_by(race_ethnicity, vote_2020) %>%
+  summarise(n = n())
+
+a <- a %>% group_by(race_ethnicity) %>%
+  mutate(prop = n/sum(n))
+
+a <- a %>% 
+  filter(vote_2020 == 1)
+
+race_stratified_estimates %>%
+  ggplot(aes(y = mean, x = forcats::fct_inorder(race_ethnicity), color = "MRP estimate")) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0) +
+  ylab("Proportion voting for Biden") +
+  xlab("Race/Ethnicity") +
+  labs(title = "Figure X: Proportion of Votes for Biden by Race/Ethnicity") +
+  geom_point(data = a, aes(y = prop, x = forcats::fct_inorder(race_ethnicity), color = "Raw data")) +
+  scale_color_manual(name = "", values = c("MRP estimate" = "black", "Raw data" = "red")) +
+  geom_hline(yintercept=0.5, linetype="dashed", color = "steel blue") +
+  theme_bw(base_size = 14)
+
 
 ```
 
@@ -341,13 +374,7 @@ while (x<52) {
 ```
 
 ```{r percent biden map, echo=FALSE}
-statebins::statebins(state_data = post_stratified_estimates, state_col = "state",
-                     value_col = "mean", brew_pal = "Blues") + theme(axis.line=element_blank(),axis.text.x=element_blank(),
-          axis.text.y=element_blank(),axis.ticks=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),legend.position="none",
-          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-          panel.grid.minor=element_blank(),plot.background=element_blank())
+
 ```
 
 ```{r electoral map winners, echo=FALSE}
@@ -368,6 +395,7 @@ electoral_map <- post_stratified_estimates %>%
 
 electoral_map
 ```
+
 ```{r}
 
 ```
