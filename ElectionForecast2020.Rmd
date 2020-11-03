@@ -306,7 +306,7 @@ Mathematically with a logistic model we can express the probability 'p' that an 
 
 $$log(\frac{p}{1 - p}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + ... + \beta_kx_k$$
 	
-	For a logistic model to be valid, we also need certain conditions to be true with our data. This includes the independence of each observation and that there is low covariance between any pair of explanatory variables.
+For a logistic model to be valid, we also need certain conditions to be true with our data. This includes the independence of each observation and that there is low covariance between any pair of explanatory variables.
 
 We know that the first assumption holds due to the survey design which is sampled randomly. We also know that the second assumption holds due to our covariance matrix where all values are low which indicates little to no covariance between our explanatory variables (the code for covariance matrix is located in the model section of the rmd file). 
 
