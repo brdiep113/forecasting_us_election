@@ -80,12 +80,11 @@ Before 35 years of age, the voter preference strongly prefers Joe Biden. Respond
 ```{r partyassoc, echo=FALSE}
 vote_D <-filter(reduced_data, vote_2020=="0")
 ideo <-table(vote_D$ideo5)
-pie(ideo, main="Figure 4. Political Party Association of Respondents Voting for Donald Trump")
+pie(ideo, main="Figure 4. Political Party Association of Respondents Voting for Donald Trump", col = hcl.colors(6, "Reds 3"), cex.main = 0.85)
 vote_J <-filter(reduced_data, vote_2020=="1")
 ideoJ <-table(vote_J$ideo5)
 
-
-pie(ideoJ, main=" Figure 5. Political Party Association of Respondents Voting for Joe Biden")
+pie(ideoJ, main=" Figure 5. Political Party Association of Respondents Voting for Joe Biden",  col = hcl.colors(6, "Blues 3"),  cex.main = 0.85)
 
 ```
 Not much crossing of party lines appears to be happening with the Nationscape data. Most of those who plan to vote for Biden range from very liberal to moderate. Likewise, respondents who consider themselves very conservative, conservative or moderate will be voting for Trump.
