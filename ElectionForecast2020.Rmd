@@ -101,8 +101,7 @@ barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "D
 Income has also shown to be associated with voter preference with our Nationscape data. Lower incomes (those close to the poverty line or minimum wage earners) plan to strongly support Joe Biden. The Democratic Party continues to lead in all income levels (although more modestly) up until six figure earners where respondents flip and plan to vote for Trump. 
 
 ```{r education, echo= FALSE}
-vote_D <-filter(reduced_data, vote_2020=="Donald Trump")
-vote_J <-filter(reduced_data, vote_2020=="Joe Biden")
+
 edu <-rbind(table(vote_J$education), table(vote_D$education))
 colnames(edu) = c("< 3rd Grade", "Grade 4-8", "Some HS", "HS Grad", "Vocational", "Some College", "Associate", "BA/B.Sc", "Some Graduate", "MA/M.Sc", "Dr")
 barplot(edu, cex.names = 0.5, main="How Respondents at Varying Levels of Education Will Vote in 2020", xlab="Figure 7. Educational Levels", col = c("blue", "red"), legend.text = c("Joe Biden", "Donald Trump"))
