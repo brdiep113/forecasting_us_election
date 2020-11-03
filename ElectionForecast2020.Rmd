@@ -275,6 +275,13 @@ plot_usmap(data=b, regions="states", values="n", color="black") +
 ## Data Cleaning
 From the ACS and Nationscape data, we removed invalid incomes/null values, null/other employment, third party/non-voters and education from the sample. As those values did not highly affect the outcome and in the case of non-voters, their vote is not relevant to an accurate analysis of who will actually cast votes during the election.
 
+We took income and age which were continuous variables in the survey and census and grouped them into income and age groups that we could poststratify more easily. These groups are also done in such a way that they represent voting blocs in general. 
+
+A similar process was done with the race and ethnicity data to aggregate smaller racial groups into broader ones that could be matched easily between the survey and census. The variable Hispanic was also aggregated into a binary variable as opposed to a more specific country specific categorical variable.
+
+In our analysis, gender and sex were made equivalent since there was an absence of other options of gender identity and we did not have any meaningful demographic information on non-binary respondents. Employment was also compressed from the survey data to match broad categories of employed, unemployed, and out of labour force. This captured the majority of the nuance between employment status that we were looking to examine in this analysis.
+
+
 ## Model
 ```{r model, echo=FALSE, include=FALSE}
 post_stratified_estimates <- read_csv("post_stratified_data.csv")
@@ -289,7 +296,7 @@ Mathematically with a logistic model we can express the probability 'p' that an 
 
 $$log(\frac{p}{1 - p}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + ... + \beta_kx_k$$
 	
-	For a logistic model to be valid, we also need certain conditions to be true with our data. This includes the independence of each observation, low covariance between any pair of explanatory variables, and that any given predicted value of probability is independent of each other predicted value.
+	For a logistic model to be valid, we also need certain conditions to be true with our data. This includes the independence of each observation and that there is low covariance between any pair of explanatory variables.
 
 We know that the first assumption holds due to the survey design which is sampled randomly. We also know that the second assumption holds due to our covariance matrix where all values are low which indicates little to no covariance between our explanatory variables (the code for covariance matrix is located in the model section of the rmd file). 
 
@@ -307,9 +314,10 @@ where y represents the probability of an individual voter voting for Biden. Spec
 
 The dependent variables that we decided to fit our model on were some of the relevant variables found in the data exploration section such as gender, age, employment status, household income, and race/ethnicity including Hispanic heritage. 
 
-We decided to group ages of voters in brackets of 10 years and income based on varying brackets to distinguish different economic groups. This allowed us to easily interpret relationships found between voting preference and age and economic groups. Modelling these variables as continuous does not show us the relationships between differing groups and makes it harder to view the representation of these groups for poststratification. The other categories were group based on convenience as the samples of 
+We decided to group ages of voters in brackets of 10 years and income based on varying brackets to distinguish different economic groups. This allowed us to easily interpret relationships found between voting preference and age and economic groups. Modelling these variables as continuous does not show us the relationships between differing groups and makes it harder to view the representation of these groups for poststratification. The other categories were group based on convenience as the samples came from our census and survey.
 
 Our model was fit using brms and Stan in R.
+
 
 ## Results
 
