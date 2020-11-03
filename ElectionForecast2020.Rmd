@@ -192,7 +192,11 @@ census_data %>%
   labs(x="Gender",
        y="Number of Respondents",
        title="Figure 9. Gender Proportion in the American Community Survey (2018) data")
+```
 
+To show that it is appropriate to use the 2018 ACS data for post stratification, the variables used in the model must be in proportions representative of the American population. Since there are slightly more females in the general American population, it is suitable that the proportion of females is a bit greater in the ACS. 
+
+```{r CensusAnalysis, echo=FALSE, warning=FALSE}
 suppressMessages(
 census_data %>% 
   ggplot(aes(x=age)) +
@@ -201,9 +205,15 @@ census_data %>%
   labs(x="Age range",
        y="Number of Respondents",
        title="Figure 10. Age range in the US Estimated Through American Community Survey (2018)"))
+```
 
+Aligned with population data, a slight left skew is demonstrated by the age group data in the2018 ACS survey. 
+
+```{r CensusAnalysis, echo=FALSE, warning=FALSE}
 suppressMessages(pie(table(census_data$employment), main = "Figure 11. American Community Survey (2018) Respondents Employment Status", cex.main = 0.8, col = hcl.colors(3, "PuBu")))
 ```
+
+Since the majority of the American public was employed at the time of the 2018 ACS survey, these results appear fitting to simulate our presidential prediction model. However, this could be a source of error as the unemployment rate is currently higher due to the pandemic. 
 
 ```{r population_distribution, echo=FALSE}
 # Graph rough population distribution based on census
@@ -226,6 +236,8 @@ plot_usmap(data=pop, regions="states", values="n", color="black") +
   labs(title = "Figure 12: Responses by State", caption = "Source: ACS 2018")
 ```
 
+State-by-state responses are visualized to show where the highest number of respondents resides. California, Texas, Florida and states closer to the coasts tend to have the most respondents in the ACS survey. Since California, Texas and Florida are the most populated states (in that order); it is good news as a base for our simulation. 
+
 ```{r income_distribution_by_state, echo=FALSE}
 #Census data
 par(las=2)
@@ -238,6 +250,8 @@ legend("topright",
        cex = 0.75)
 ```
 
+Income was another key variable in our simulation model and it can be shown here that states vary by proportion of respondents at various income levels. 
+
 ```{r Race_By_State,  echo=FALSE, warning=FALSE}
 #Census Data
 GraphIndex <- c("Asian/Pacific Islander", "Black", "Native", "Other/Mixed", "White")
@@ -249,6 +263,8 @@ legend("topright",
        fill = hcl.colors(5, "Reds 3"), ncol = 1,
        cex = 0.75)
 ```
+
+Distribution of race ethnicities throughout America are shown here to be more common in the southern states as well as states near the Pacific Ocean (excluding Alaska)
 
 ```{r hispanic_distribution, echo=FALSE}
 
@@ -282,6 +298,9 @@ plot_usmap(data=b, regions="states", values="n", color="black") +
   labs(title = "Figure 15: Proportion of Hispanic Respondents", caption = "Source: ACS 2018")
 
 ```
+
+Proportion of Hispanic residents in the 2018 ACS is distributed throughout the southern United States and states along the coast, similar to race ethnicities. 
+
 ## Data Cleaning
 From the ACS and Nationscape data, we removed invalid incomes/null values, null/other employment, third party/non-voters and education from the sample. As those values did not highly affect the outcome and in the case of non-voters, their vote is not relevant to an accurate analysis of who will actually cast votes during the election.
 
