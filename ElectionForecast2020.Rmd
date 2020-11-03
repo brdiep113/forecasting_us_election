@@ -60,22 +60,27 @@ reduced_data <-survey_data
 data <- survey_data
 ethnicity <-table(data$vote_2020, data$race_ethnicity)
 #Create a plot of how ethnicities tend to vote
-barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Figure 1. Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue"))
+barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Figure 1. Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue")) 
 ```
+
 Ethnicities, as shown by the Nationscape data, tend to favour the democratic candidate, Joe Biden. White voters on the other hand, appear to be planning their vote for Trump
+
 ```{r genderplot, echo=FALSE}
 #Make graph comparing voting habits of male and female voteds
 gen_vote<-table(reduced_data$gender, reduced_data$vote_2020)
 col = c("red","blue")
 barplot(gen_vote, names.arg=c("Donald Trump", "Joe Biden"), beside = TRUE, legend.text = TRUE, col = col, border = "white", main="Figure 2. How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
 ```
+
 Another trend that the Nationscape data demonstrates is that female voters tend to prefer Joe Biden over Donald Trump. Male voters planned to vote the other way and support the incumbent president.
 
 ```{r ageplot, echo=FALSE}
 gen_vote<-table(data$vote_2020, data$age)
 barplot(gen_vote, beside = TRUE, legend.text = c("Donald Trump", "Joe Biden"), col = col, border = "white", main="Figure 3. How Respondents Plan to Vote in 2020 By Age Group", ylab="Number of respondents", xlab="Age Groups in Years", cex.names = 0.7)
 ```
-Before 35 years of age, the voter preference strongly prefers Joe Biden. Respondents over this age seem to slightly prefer Donald Trump but some age groups are too close to call. 
+
+Before 35 years of age, the voter preference strongly prefers Joe Biden. Respondents over this age seem to slightly prefer Donald Trump but some age groups are too close to 
+call. 
 
 ```{r partyassoc, echo=FALSE}
 vote_D <-filter(reduced_data, vote_2020=="0")
@@ -87,6 +92,7 @@ ideoJ <-table(vote_J$ideo5)
 pie(ideoJ, main=" Figure 5. Political Party Association of Respondents Voting for Joe Biden",  col = hcl.colors(6, "Blues 3"),  cex.main = 0.85)
 
 ```
+
 Not much crossing of party lines appears to be happening with the Nationscape data. Most of those who plan to vote for Biden range from very liberal to moderate. Likewise, respondents who consider themselves very conservative, conservative or moderate will be voting for Trump.
 
 ```{r income, echo=FALSE}
@@ -97,6 +103,7 @@ par(las=2)
 barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Figure 6. Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
 
 ```
+
 Income has also shown to be associated with voter preference with our Nationscape data. Lower incomes (those close to the poverty line or minimum wage earners) plan to strongly support Joe Biden. The Democratic Party continues to lead in all income levels (although more modestly) up until six figure earners where respondents flip and plan to vote for Trump. 
 
 ```{r education, echo= FALSE}
@@ -107,8 +114,8 @@ barplot(edu, cex.names = 0.5, main="How Respondents at Varying Levels of Educati
 
 
 ```
-Interestingly, education level of respondent did not show a relationship with voting intentions for the 2020 election. Across all education levels queried in the survey, an association with either candidate did not exist.  
 
+Interestingly, education level of respondent did not show a relationship with voting intentions for the 2020 election. Across all education levels queried in the survey, an association with either candidate did not exist.  
 
 ```{r, echo=FALSE}
 states <-rbind(table(vote_J$state), table(vote_D$state))
@@ -116,7 +123,9 @@ par(las=2)
 barplot(states, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Figure 8. Voting Tendencies of Respondents by State Brackets", ylab="Number of Respondents")
 
 ```
+
 Similar to education, it did not appear that states tended to favour any particular candidate in the Nationscape survey data. The race for the Whitehouse appeared to be fair game in all states at the time of this survey. 
+
 
 ## ACS Data 
 Since we decided to poststratify via adjusting the weights of respondent groups using an additional dataset, we used the American Community Surveys (ACS) from 2018. The ACS is a reliable source of data on population parameters and is sent out to a sample of 3.5 million households and group quarters monthly. The population of interest for the ACS are all citizens of the US. The population frame for the ACS is the Master Address File (MAF) which consists of the Census Bureau’s known living quarters and some nonresidential units. The MAF includes households and group quarters where groups of people live together. In 2013 the survey methodology was updated to stop sending surveys to College dorms during summer months to improve response rates and lower costs.   
