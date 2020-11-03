@@ -120,6 +120,17 @@ barplot(states, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "D
 ```
 Similar to education, it did not appear that states tended to favour any particular candidate in the Nationscape survey data. The race for the Whitehouse appeared to be fair game in all states at the time of this survey. 
 
+## ACS Data 
+Since we decided to poststratify via adjusting the weights of respondent groups using an additional dataset, we used the American Community Surveys (ACS) from 2018. The ACS is a reliable source of data on population parameters and is sent out to a sample of 3.5 million households and group quarters monthly. The population of interest for the ACS are all citizens of the US. The population frame for the ACS is the Master Address File (MAF) which consists of the Census Bureau’s known living quarters and some nonresidential units. The MAF includes households and group quarters where groups of people live together. In 2013 the survey methodology was updated to stop sending surveys to College dorms during summer months to improve response rates and lower costs.   
+
+The Census Bureau first divides the US into five distinct sub-frames, each of which is utilized for a survey every five years to avoid oversampling specific areas. New addresses in each of these sub-frames are added each year systematically. After selecting the sub-frame for the year every block in the sub-frame is assigned a sampling rate based on sampling identities that affect their population like being in a school district or being in a Native reserve. The smallest sampling identity is used to determine the sampling rate for the block. After selection is finished the assigned blocks are grouped via stratum and geography to be systematically assigned to a month in the year to be surveyed.
+
+Surveying each household in assigned blocks involves four phases of attempting contact. First the Census Bureau sends each household a request form to fill the survey out online and if not completed they mail a questionnaire to be returned by mail. If they still haven’t received a response they will follow up with a Computer Assisted Telephone Interview. Finally if a household has not answered any of the previous survey attempts they will conduct a Computer Assisted Personal Interview with a representative of the Bureau travelling to the address. 
+
+After data selection occurs the Census Bureau weights the household respondents in three stages. First they weigh to account for the sampling rates they calculated previously via geography. Next they weigh the households to account for non-responding households in the same block to account for the reduced sampling rate. Finally they weigh the households via age, sex, race and Hispanic origin to match their population estimates program. 
+
+Although the ACS has a very comprehensive sampling design they only select a small sample size of 295 000 of more than 180 million households to be sampled each month preventing accurate representation through a robust sample size. Additionally since the Census Bureau uses multiple methods of completing the ACS survey differing measurement error are present and not consistent among households sampled. 
+
 ```{r ElectoralVotes, echo=FALSE}
 #creates table of states, number of electoral votes for that state, votes for biden and votes for trump
 Electoral_votes_by_state <- matrix(c(3,9,6,11,55,9,7,3,3,29,16,4,6,4,20,11,
@@ -253,7 +264,8 @@ plot_usmap(data=b, regions="states", values="n", color="black") +
   labs(title = "Figure 15: Proportion of Hispanic Respondents", caption = "Source: ACS 2018")
 
 ```
-
+## Data Cleaning
+From the ACS and Nationscape data, we removed invalid incomes/null values, null/other employment, third party/non-voters and education from the sample. As those values did not highly affect the outcome and in the case of non-voters, their vote is not relevant to an accurate analysis of who will actually cast votes during the election.
 
 ## Model
 ```{r model, echo=FALSE, include=FALSE}
@@ -262,7 +274,33 @@ model <- read_rds("outputs/model/brms_model_states8.rds")
 summary(model)
 vconv(model)
 ```
+A Bayesian multilevel logistic model with post-stratification was used to predict the plurality for each state in the US 2020 election. We used a logistic model as they can associate binary and continuous independent variables with a binary categorical response variable. Since the decision of which major party to vote for is condensed to a binary response variable, the logistic model is well suited for our goal of predicting the election winner. Linear models were unsuited for our goals as they require the response variable to be a continuous variable such as height. Our response variable was either 0 (representing a vote for Trump) or 1( representing a vote for Biden), which is binary in nature.
 
+Mathematically with a logistic model we can express the probability 'p' that an individual will vote for the Democratic Party as a logarithmic function of the various dependent variables.
+
+$$log(\frac{p}{1 - p}) = \beta_0 + \beta_1x_1 + \beta_2x_2 + ... + \beta_kx_k$$
+	
+	For a logistic model to be valid, we also need certain conditions to be true with our data. This includes the independence of each observation, low covariance between any pair of explanatory variables, and that any given predicted value of probability is independent of each other predicted value.
+
+We know that the first assumption holds due to the survey design which is sampled randomly. We also know that the second assumption holds due to our covariance matrix where all values are low which indicates little to no covariance between our explanatory variables (the code for covariance matrix is located in the model section of the rmd file). 
+
+We decided to make the model multilevel in order to group voters by state. Since each state varies significantly in voting preference and demographic groups we saw it fit to analyze plurality of each state separately. Most importantly, the electoral college also assigns electoral votes based on plurality of each state so to predict the winner of the US 2020 election we needed to separate the predictions via state. MRP also allows us to generalize our findings based on a possibly unrepresentative sample by correcting with external demographic data (Wu & Thompson 2020). However, multilevel modelling with poststratification does not allow us to firmly establish a causal relationship between our independent and dependent variables (Gelman & Kennedy 2020). MRP also requires a large dataset containing the demographics of the population in order to be useful. For our purposes, this condition is fulfilled since the ACS comprehensively details all the demographic information that is relevant to our analysis.
+
+We used a Bayesian approach rather than a Frequentist to allow a credible interval to be produced. The Bayesian approach involves updating the probability of an event based on prior knowledge affecting the event. Even though we use noninformative prior information--known as a prior--the method allows us to create a credible interval in which we are 95% certain our results will occur. If we used a Frequentist method that uses proportions or frequencies of the data we can only make a confidence interval that shows if the elections were repeated 100 times our result would occur 95 times. Bayesian models are known to account for any cause of uncertainty in inferences specifically for predictions.  
+
+We decided to use a Bernoulli distribution as a noninformative prior to make our model since it has two outcomes: either a failure (0) or a success (1). Other distributions with binary outcomes like the Binomial Distribution involve sampling with replacement of individuals in each sample, which is not observed in the sampling methods of the Nationscape and ACS datasets.
+
+The Bayesian approach to logistic regression involves predicting the parameters using the typical approach to Bayesian inference involving the priors. If we express our model in mathematical notation we are returned the form: 
+
+$$P(\beta_0, \beta_1, …, \beta_k| y, X_1,...,X_k) \propto P(y, X_1,...,X_k|\beta_0, \beta_1, …, \beta_k) * P(\beta_0, \beta_1, …, \beta_k)$$
+
+where y represents the probability of an individual voter voting for Biden. Specifically our model predicts the outcome of the average voter that we can generalize to the entire US voting population. The beta values represent our independent variables, specifically age, income, employment status, sex, state, race, and whether or not an individual is Hispanic. We decided to use poststratification when making our model to accurately depict the US voting population. To reduce any non-response bias we weighted different demographic groups to represent the population of interest. 
+
+The dependent variables that we decided to fit our model on were some of the relevant variables found in the data exploration section such as gender, age, employment status, household income, and race/ethnicity including Hispanic heritage. 
+
+We decided to group ages of voters in brackets of 10 years and income based on varying brackets to distinguish different economic groups. This allowed us to easily interpret relationships found between voting preference and age and economic groups. Modelling these variables as continuous does not show us the relationships between differing groups and makes it harder to view the representation of these groups for poststratification. The other categories were group based on convenience as the samples of 
+
+Our model was fit using brms and Stan in R.
 
 ## Results
 
@@ -295,7 +333,6 @@ suppressMessages(post_stratified_estimates %>%
 ```
 
 After fitting our Bayesian multilevel regression model with poststratification, we find that Biden is at an advantage for winning the election. We see in Figure 16 above, where we plot the predicted proportion of Biden votes in each state according to our estimate from MRP, as well as the raw estimate according to the survey. In particular we plot the mean of the predicted proportion of Biden votes among voters and the 95% credibility interval. We notice that the raw estimate of Biden proportions does not well represent the estimate after MRP in many cases, especially in states that have small sample sizes.
-
 
 ```{r graph_gender_votes, echo=FALSE, message=FALSE, fig.height=3}
 
@@ -572,7 +609,70 @@ electoral_map
   When we sum up the weight of these states and their electoral votes we predict Biden to win 284 electoral college votes to Trump's 254. 
 
 ## Discussion
+Using a Bayesian multilevel logistic regression model composed of age, race, hispanic identity, home state, gender, employment status and income level variables; we found that Joe Biden would win the 2020 presidential election in terms of the electoral college as well as the popular vote. However, we should continue to analyze the reasons as to why Joe Biden is favoured to win the elections and whether these trends can be used to predict future elections.
+
+Our model shows that the core supporters for the Democratic Party as well as the Republican Party can be deconstructed to consist of clear groups based on social and economic class. It is evident from our results that Republicans tend to skew towards being white, male, older, and have higher household incomes compared to Democrats who gather much of their support from women, racial minorities, and lower/middle class voters.
+
+As seen from our census data, there are more people above the age of 45 than there are below as well as more white people than any other ethnicity. These make up a core part of Donald Trump’s and the Republicans’ voter base. Traditionally, higher income earners also tend to vote Republican due to their favourable policies regarding wealth, which our data also supports. 
+
+However, we also note that there are more female, middle class and lower economic class voters which are all groups that are predicted to favour Joe Biden. Not only were these variables significantly associated with voter outcomes, but current literature agrees that younger, female, non-white voters tend to be associated with the Democratic Party (Pew Research Center 2020).
+ 
+Although our model is being fit using data from a year unique in several ways (i.e. global pandemic), the fact that the variables chosen are verified by literature based on previous elections is important. It helps ensure that the model has not been overfit and can possibly be used as a template for future elections.
+
+Racial data seen in our results also shows that the vote is heavily divided on racial lines, this suggests that Biden is much more likely to win in states that have higher proportions of ethnic minorities, in particular black/African Americans and those of Hispanic heritage. This is clear from graphs above where Biden has significant wins in the American South, where black and Hispanic voters make up a large percentage of the state population.
+
+Our analysis only took into account demographic information about voters, and completely omitted ideological factors. Thus, the voting trends that are seen in our model exposes a major rift within American society. This rift appears to be drawn particularly on racial and class lines and suggests that they still play a heavy role in the political process.  We expect that these divisions will continue to be exacerbated as these themes become increasingly politicized. As American society continues to diversify, if we do not see a bridging of social and economic inequality, we are likely to see greater polarization between the parties.
+
+The model described in this paper is based on the outcomes of voting within Electoral colleges rather than the popular vote. Recent elections in 2016 and 2000 have shown that the popular vote and Electoral college may not agree so it is important to simulate models using the latter. Studies have found a bias in the Electoral college towards Republicans historically but other simulations for the 2020 elections have determined similar outcomes with the Democrats leading.
+
+We also find that our analysis is most confident in states where the credibility interval for the proportion of votes for Biden in states that have their mean further away from 0.5. These states are more likely to be “safe” and their races will be less competitive than others since there is likely to be a clear front runner. However, for states like Tennessee, New Jersey, and Arkansas, we see that the mean is incredibly close to the 0.5 threshold and we predict that these will be competitive swing states that could determine the outcome of the election.
 
 ## References
+Brandon, E. (2020). “Why Older Citizens are More Likely to Vote.” Retrieved from: https://money.usnews.com/money/retirement/aging/articles/why-older-citizens-are-more-likely-to-vote.
 
-Tausanovitch, Chris and Lynn Vavreck. 2020. Democracy Fund + UCLA Nationscape, October 10-17, 2019 (version 20200814). Retrieved from https://www.voterstudygroup.org/downloads?key=1b155ffb-aa7a-432a-826e-6b8876e493ac.
+Bürkner, P (2017). brms: An R Package for Bayesian Multilevel Models Using Stan. Journal of Statistical Software, 80(1), 1-28. doi:10.18637/jss.v080.i01 
+
+Bürkner, P (2018). Advanced Bayesian Multilevel Modeling with the R Package brms. The R Journal, 10(1), 395-411. doi:10.32614/RJ-2018-017
+
+Desilver, D. (2014). “The politics of American generations: How age affects attitudes and voting behavior.” Retrieved from: https://www.pewresearch.org/fact-tank/2014/07/09/the-politics-of-american-generations-how-age-affects-attitudes-and-voting-behavior/.
+
+Di Lorenzo, P (2020). usmap: US Maps Including Alaska and Hawaii. R package version 0.5.1. Retrieved from: https://CRAN.R-project.org/package=usmap. 
+
+Encyclopedia Brittanica. (n.d.). “United States Electoral College Votes by State.” Retrieved from: https://www.britannica.com/topic/United-States-Electoral-College-Votes-by-State-1787124.
+
+Erikson, R., Sigman, K., & Yao, L. (2020). “Electoral College bias and the 2020 presidential election”. Retrieved from: https://www.pnas.org/content/early/2020/10/22/2013581117.
+
+Flood, S., Goeken, R., Grover, J.,  Meyer, E., Pacas, J., & Sobek, M (2020). IPUMS USA: Version 10.0 [dataset]. Minneapolis, MN: IPUMS. Retrieved from: https://doi.org/10.18128/D010.V10.0.
+
+Frey, W. (2020). “Older Voters May Secure A Biden Victory in 2020's Swing States”. Retrieved November from: https://www.brookings.edu/blog/the-avenue/2020/10/28/older-voters-may-secure-a-biden-victory-in-2020s-swing-states/.
+
+Gelman, A., & Kennedy, L. (2020). “Know your population and know your model: Using model-based regression and post-stratification to generalize findings beyond the observed sample.” Retrieved from: https://arxiv.org/pdf/1906.11323.pdf  
+
+JJ Allaire et al. (2020). rmarkdown: Dynamic Documents for R. R package version 2.3. Retrieved from:   https://rmarkdown.rstudio.com.
+
+Pew Research Center. (2016). “Ideological Gap Widens Between More, Less Educated Adults”. Retrieved from: https://www.pewresearch.org/politics/2016/04/26/a-wider-ideological-gap-between-more-and-less-educated-adults/.
+
+Pew Research Center. (2020).  “Trends in party affiliation among demographic groups”.   
+      Retrieved from:  
+      https://www.pewresearch.org/politics/2018/03/20/1-trends-in-party-affiliation-among-
+     demographic-groups/.
+
+R Core Team. (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. Retrieved from: https://www.R-project.org/.
+
+Robinson, D., Hayes, A., & Couch, S. (2020). broom: Convert Statistical Objects into Tidy Tibbles. R Package version 0.7.0 Retrieved from: https://CRAN.R-project.org/package=broom. 
+
+Rosentiel, T. (2007). “Money Walks”. Retrieved from: https://www.pewresearch.org/2007/04/12/money-walks/.
+
+Rudis, B. (2020). statebins: Create United States Uniform Cartogram Heatmaps. R package version 1.4.0. Retrieved from:  https://CRAN.R-project.org/package=statebins.
+
+Tausanovitch, C., & Lynn V. (2019). Democracy Fund + UCLA Nationscape(version 20200814). Retrieved from https://www.voterstudygroup.org/downloads?key=1b155ffb-aa7a-432a-826e-6b8876e493ac.
+
+The Economist. (2020). “How will Donald Trump’s covid-19 infection affect the election?” Retrieved from: https://www.economist.com/united-states/2020/10/02/how-will-donald-trumps-covid-19-infection-affect-the-election?fbclid=IwAR33_5og5cqlosoP36fplLcNn6w1qd0smgqQpZZrBXOUwReann7RtvR0bw0. 
+
+Wickham, H. (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag. New York.
+
+Wickham, H., & Miller, E. (2020). haven: Import and Export 'SPSS',  'Stata' and 'SAS' Files. R package version 2.3.1. Retrieved from: https://CRAN.R-project.org/package=haven.
+
+Wickham et al. (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686. Retrieved from: https://doi.org/10.21105/joss.01686.
+
+Wu, C., & Thompson, M. (2020). Sampling Theory and Practice, Springer.
