@@ -8,6 +8,8 @@ Inputs contain data that are unchanged from their original source. We use two da
 
 - [ACS data - To obtain the ACS data first register an account at "https://usa.ipums.org". After registering, apply for access of the ACS data and login to the website. Once logged in navigate to Create your custom data set and click "Get Data". Select the 2018 survey and select the variables STATEICP, SEX, AGE, EMPSTAT, RACE, HISPAN, FINCTOT. Once done click view cart and then click create data extract. Change the dataset to STATA file type and add a description to the dataset. Once finished click submit extract and download the file once it's ready.]
 
+Save the datasets in a directory input/data/~
+
 ## Model and CSV files
 Outputs contain data that are modified from the input data, the report, and supporting material.
 These can all be found in the directory outputs
