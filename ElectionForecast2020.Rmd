@@ -70,7 +70,8 @@ Ethnicities, as shown by the Nationscape data, tend to favour the democratic can
 #Make graph comparing voting habits of male and female voteds
 gen_vote<-table(reduced_data$gender, reduced_data$vote_2020)
 col = c("red","blue")
-barplot(gen_vote, names.arg=c("Donald Trump", "Joe Biden"), beside = TRUE, legend.text = TRUE, col = col, border = "white", main="Figure 2. How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
+barplot(gen_vote, names.arg=c("Donald Trump", "Joe Biden"), beside = TRUE, col = col, border = "white", main="Figure 2. How Respondents Plan to Vote in 2020 By Gender", ylab="Number of respondents", xlab="Options for 2020 American Election", cex.names = 0.7)
+legend("top", legend = c("Female", "Male"), fill=col, cex = 0.7)
 ```
 
 Another trend that the Nationscape data demonstrates is that female voters tend to prefer Joe Biden over Donald Trump. Male voters planned to vote the other way and support the incumbent president.
