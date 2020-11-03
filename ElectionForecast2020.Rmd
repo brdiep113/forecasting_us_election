@@ -102,7 +102,7 @@ vote_D <-filter(reduced_data, vote_2020=="0")
 vote_J <-filter(reduced_data, vote_2020=="1")
 income <-rbind(table(vote_J$household_income), table(vote_D$household_income))
 par(las=2)
-barplot(income, beside = TRUE, cex.names = 0.70, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Figure 6. Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
+barplot(income, beside = TRUE, cex.names = 0.50, legend.text = c("Joe Biden", "Donald Trump"), col = c("blue", "red"), main = "Figure 6. Voting Tendencies of Respondents by Income Brackets", ylab="Number of Respondents")
 
 ```
 
@@ -113,7 +113,7 @@ Income has also shown to be associated with voter preference with our Nationscap
 edu <-rbind(table(vote_J$education), table(vote_D$education))
 colnames(edu) = c("< 3rd Grade", "Grade 4-8", "Some HS", "HS Grad", "Vocational", "Some College", "Associate", "BA/B.Sc", "Some Graduate", "MA/M.Sc", "Dr")
 par(las=2)
-barplot(edu, cex.names = 0.7, main="How Respondents at Varying Levels of Education Will Vote in 2020", xlab="Figure 7. Educational Levels", col = c("blue", "red"), legend.text = c("Joe Biden", "Donald Trump"))
+barplot(edu, cex.names = 0.5, main="How Respondents at Varying Levels of Education Will Vote in 2020", xlab="Figure 7. Educational Levels", col = c("blue", "red"), legend.text = c("Joe Biden", "Donald Trump"))
 
 
 ```
@@ -229,19 +229,25 @@ plot_usmap(data=pop, regions="states", values="n", color="black") +
 ```{r income_distribution_by_state, echo=FALSE}
 #Census data
 par(las=2)
-colcol = c("grey", "grey2", "steelblue", "steelblue2", "steelblue3", "steelblue4")
-barplot(table(census_data$household_income, census_data$state), cex.names = 0.5, col = colcol, main ="Figure 13: Estimates of Income Stratification By State")
+GraphIndex <- c("Very High Income", "High Income", "Low Income", "Lower Middle Income", "Under Poverty Line", "Upper Middle Income")
+
+barplot(table(census_data$household_income, census_data$state), cex.names = 0.5, col = hcl.colors(6, "Blues"), main ="Figure 13: Estimates of Income Stratification By State")
 legend("topright", 
-       legend = c("Upper Middle Income", "Under Poverty Line", "Lower Middle Income", "Low Income", "High Income", "Very High Income"), 
-       fill = colcol, ncol = 2,
+       legend = GraphIndex, 
+       fill = hcl.colors(6, "Blues"), ncol = 2,
        cex = 0.75)
 ```
 
 ```{r Race_By_State,  echo=FALSE, warning=FALSE}
 #Census Data
+GraphIndex <- c("Asian/Pacific Islander", "Black", "Native", "Other/Mixed", "White")
 suppressMessages(par(las=2))
 suppressMessages(
-barplot(table(census_data$race_ethnicity,  census_data$state), cex.names = 0.5, col = hcl.colors(5, "Reds 3"), main ="Figure 14: Distribution of Race Ethnicities By State", legend.text= TRUE))
+barplot(table(census_data$race_ethnicity,  census_data$state), cex.names = 0.5, col = hcl.colors(5, "Reds 3"), main ="Figure 14: Distribution of Race Ethnicities By State"))
+legend("topright", 
+       legend = GraphIndex, 
+       fill = hcl.colors(5, "Reds 3"), ncol = 1,
+       cex = 0.75)
 ```
 
 ```{r hispanic_distribution, echo=FALSE}
