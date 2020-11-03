@@ -680,7 +680,7 @@ Encyclopedia Brittanica. (n.d.). “United States Electoral College Votes by Sta
 
 Erikson, R., Sigman, K., & Yao, L. (2020). “Electoral College bias and the 2020 presidential election”. Retrieved from: https://www.pnas.org/content/early/2020/10/22/2013581117.
 
-Flood, S., Goeken, R., Grover, J.,  Meyer, E., Pacas, J., & Sobek, M (2020). IPUMS USA: Version 10.0 [dataset]. Minneapolis, MN: IPUMS. Retrieved from: https://doi.org/10.18128/D010.V10.0.
+Flood, S., Goeken, R., Grover, J.,  Meyer, E., Pacas, J., & Sobek, M (2020). IPUMS USA: Version 10.0 [American Community Survey 2018]. Minneapolis, MN: IPUMS. Retrieved from: https://doi.org/10.18128/D010.V10.0.
 
 Frey, W. (2020). “Older Voters May Secure A Biden Victory in 2020's Swing States”. Retrieved November from: https://www.brookings.edu/blog/the-avenue/2020/10/28/older-voters-may-secure-a-biden-victory-in-2020s-swing-states/.
 
