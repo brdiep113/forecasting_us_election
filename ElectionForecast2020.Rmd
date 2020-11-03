@@ -60,7 +60,8 @@ reduced_data <-survey_data
 data <- survey_data
 ethnicity <-table(data$vote_2020, data$race_ethnicity)
 #Create a plot of how ethnicities tend to vote
-barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Figure 1. Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", legend.text = c("Donald Trump", "Joe Biden"), col = c("red", "blue")) 
+barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Figure 1. Respondents Voting Habits By Ethnicity", xlab= "Ethnicity", col = c("red", "blue"))
+legend("topleft", legend= c("Donald Trump", "Joe Biden"), fill = c("red", "blue"))
 ```
 
 Ethnicities, as shown by the Nationscape data, tend to favour the democratic candidate, Joe Biden. White voters on the other hand, appear to be planning their vote for Trump
@@ -180,7 +181,7 @@ votes <- Electoral_votes_by_state %>%
 ```
 
 
-```{r CensusAnalysis, echo=FALSE}
+```{r CensusAnalysis, echo=FALSE, warning=FALSE}
 census_data %>% 
   ggplot(aes(x=gender)) +
   geom_bar(fill='red', color='black')+
@@ -233,7 +234,7 @@ legend("topright",
        cex = 0.75)
 ```
 
-```{r Race_By_State,  echo=FALSE}
+```{r Race_By_State,  echo=FALSE, warning=FALSE}
 #Census Data
 par(las=2)
 barplot(table(census_data$race_ethnicity,  census_data$state), cex.names = 0.5, col = hcl.colors(5, "Reds 3"), main ="Figure 14: Distribution of Race Ethnicities By State", legend.text= TRUE)
