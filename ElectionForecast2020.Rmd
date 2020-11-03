@@ -271,8 +271,9 @@ From the ACS and Nationscape data, we removed invalid incomes/null values, null/
 post_stratified_estimates <- read_csv("post_stratified_data.csv")
 model <- read_rds("outputs/model/brms_model_states8.rds")
 summary(model)
-vconv(model)
+vcov(model)
 ```
+
 A Bayesian multilevel logistic model with post-stratification was used to predict the plurality for each state in the US 2020 election. We used a logistic model as they can associate binary and continuous independent variables with a binary categorical response variable. Since the decision of which major party to vote for is condensed to a binary response variable, the logistic model is well suited for our goal of predicting the election winner. Linear models were unsuited for our goals as they require the response variable to be a continuous variable such as height. Our response variable was either 0 (representing a vote for Trump) or 1( representing a vote for Biden), which is binary in nature.
 
 Mathematically with a logistic model we can express the probability 'p' that an individual will vote for the Democratic Party as a logarithmic function of the various dependent variables.
