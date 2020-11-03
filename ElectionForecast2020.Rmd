@@ -184,6 +184,7 @@ votes <- Electoral_votes_by_state %>%
 
 
 ```{r CensusAnalysis, echo=FALSE, warning=FALSE}
+
 census_data %>% 
   ggplot(aes(x=gender)) +
   geom_bar(fill='red', color='black')+
@@ -199,9 +200,9 @@ census_data %>%
   theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
   labs(x="Age range",
        y="Number of Respondents",
-       title="Figure 10. Age range in the US")
+       title="Figure 10. Age range in the US"))
 
-pie(table(census_data$employment), main = "Figure 11. Employment Status"))
+suppressMessages(pie(table(census_data$employment), main = "Figure 11. Employment Status"))
 ```
 
 ```{r population_distribution, echo=FALSE}
@@ -238,8 +239,8 @@ legend("topright",
 
 ```{r Race_By_State,  echo=FALSE, warning=FALSE}
 #Census Data
+suppressMessages(par(las=2))
 suppressMessages(
-par(las=2)
 barplot(table(census_data$race_ethnicity,  census_data$state), cex.names = 0.5, col = hcl.colors(5, "Reds 3"), main ="Figure 14: Distribution of Race Ethnicities By State", legend.text= TRUE))
 ```
 
