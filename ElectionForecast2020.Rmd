@@ -672,7 +672,7 @@ The model described in this paper is based on the outcomes of voting within Elec
 
 We also find that our analysis is most confident in states where the credibility interval for the proportion of votes for Biden in states that have their mean further away from 0.5. These states are more likely to be “safe” and their races will be less competitive than others since there is likely to be a clear front runner. However, for states like Tennessee, New Jersey, and Arkansas, we see that the mean is incredibly close to the 0.5 threshold and we predict that these will be competitive swing states that could determine the outcome of the election.
 
-Limitations and Weaknesses
+## Limitations and Weaknesses
 
 One limitation of our model is that it was restricted to only one phase of the Nationscape Data. Although 5200 respondents is a good size survey, it may not properly model a population of 350 million. For example, current literature has shown that well educated citizens, those holding degrees higher than a Bachelor’s, identify as liberal more than republican. However, the data set used to model our prediction did not show a significant difference in voter ideologies based on education level.
 
@@ -685,13 +685,17 @@ The 2020 U.S. election is also particularly unique because it is the first feder
 Another limitation with our predictions is that the survey we use for our model is from June. Recent developments that could swing voter preference are not accounted for in our model and represent a possible bias that can affect the credibility of our predictions. For instance Trump’s recent management of the Covid-19 pandemic and the effect it’s taken on the economy has experts believing his approval rating is currently declining (The Economist 2020). After contracting Covid-19 himself, many believe Trump will not be able to fulfill his duties as president and cannot handle managing the pandemic response. Overall, current news regarding Trump can cause a bias in our data set of inflating the number of Trump voters. Particularly older age demographics that are concerned the most with Covid-19 will see the most inflation. This will affect not only the model’s voting percentage for Trump, but also the relationship between age group and vote. This is the most concerning due to older age demographics typically having a higher proportion of Republican voters (Desilver 2014).
 
 
-Future Work
+## Future Work
 	
 Future studies for the next election should primarily study voting preferences of swing states in the US. Since the elections work via plurality of each state rather than the country as a whole, studies should first determine swing states via a quick survey. States with less than a ten percent perceived difference between the two leading parties should be considered for a further study to predict the election winner. This method will be more time and cost-effective than conducting surveys in states where there is a clear frontrunner.
 
 Mail-in voting also provides an additional avenue for future work as mail-in ballots will be used in the 2020 election on a wider scale than any previous U.S. election. An analysis on the habits of voters who voted using a mail-in ballot warrants further investigation.
 
 Finally our model offers the Republican and Democratic Parties future targets to focus their campaigns towards in the next election. They can view states that are close in votership but are favoured towards their opposition and collect more data on the demographics of the state and policies people in the state favour. The parties can also look at the average demographics that support their opponent using our model and survey these specific demographics for changes they’d like to see in their party to increase votership.
+
+## Appendix
+
+The code, scripts, and RMarkdown file in this report's analysis can also be found at the following link: https://github.com/brdiep113/forecasting_us_election
 
 ## References
 Brandon, E. (2020). “Why Older Citizens are More Likely to Vote.” Retrieved from: https://money.usnews.com/money/retirement/aging/articles/why-older-citizens-are-more-likely-to-vote.
