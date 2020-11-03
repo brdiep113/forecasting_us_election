@@ -64,7 +64,7 @@ barplot(ethnicity, cex.names = 0.5, beside=TRUE, main="Figure 1. Respondents Vot
 legend("topleft", legend= c("Donald Trump", "Joe Biden"), fill = c("red", "blue"))
 ```
 
-Ethnicities, as shown by the Nationscape data, tend to favour the democratic candidate, Joe Biden. White voters on the other hand, appear to be planning their vote for Trump
+Ethnic minorities, as shown by the Nationscape data, tend to favour the democratic candidate, Joe Biden. White voters on the other hand, appear to be planning their vote for Trump
 
 ```{r genderplot, echo=FALSE}
 #Make graph comparing voting habits of male and female voteds
@@ -81,8 +81,7 @@ gen_vote<-table(data$vote_2020, data$age)
 barplot(gen_vote, beside = TRUE, legend.text = c("Donald Trump", "Joe Biden"), col = col, border = "white", main="Figure 3. How Respondents Plan to Vote in 2020 By Age Group", ylab="Number of respondents", xlab="Age Groups in Years", cex.names = 0.7)
 ```
 
-Before 35 years of age, the voter preference strongly prefers Joe Biden. Respondents over this age seem to slightly prefer Donald Trump but some age groups are too close to 
-call. 
+Voters younger than 35 years of age strongly prefer Joe Biden. Respondents over this age seem to slightly prefer Donald Trump but some age groups are too close to call. 
 
 ```{r partyassoc, echo=FALSE}
 vote_D <-filter(reduced_data, vote_2020=="0")
@@ -196,7 +195,7 @@ census_data %>%
 
 To show that it is appropriate to use the 2018 ACS data for post stratification, the variables used in the model must be in proportions representative of the American population. Since there are slightly more females in the general American population, it is suitable that the proportion of females is a bit greater in the ACS. 
 
-```{r CensusAnalysis, echo=FALSE, warning=FALSE}
+```{r CensusAnalysis age, echo=FALSE, warning=FALSE}
 suppressMessages(
 census_data %>% 
   ggplot(aes(x=age)) +
@@ -209,7 +208,7 @@ census_data %>%
 
 Aligned with population data, a slight left skew is demonstrated by the age group data in the2018 ACS survey. 
 
-```{r CensusAnalysis, echo=FALSE, warning=FALSE}
+```{r CensusAnalysis employment, echo=FALSE, warning=FALSE}
 suppressMessages(pie(table(census_data$employment), main = "Figure 11. American Community Survey (2018) Respondents Employment Status", cex.main = 0.8, col = hcl.colors(3, "PuBu")))
 ```
 
