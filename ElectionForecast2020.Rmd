@@ -191,7 +191,7 @@ census_data %>%
   theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
   labs(x="Gender",
        y="Number of Respondents",
-       title="Figure 9. Gender Proportion in Census data")
+       title="Figure 9. Gender Proportion in the American Community Survey (2018) data")
 
 suppressMessages(
 census_data %>% 
@@ -200,9 +200,9 @@ census_data %>%
   theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid")) +
   labs(x="Age range",
        y="Number of Respondents",
-       title="Figure 10. Age range in the US"))
+       title="Figure 10. Age range in the US Estimated Through American Community Survey (2018)"))
 
-suppressMessages(pie(table(census_data$employment), main = "Figure 11. Employment Status"))
+suppressMessages(pie(table(census_data$employment), main = "Figure 11. American Community Survey (2018) Respondents Employment Status", cex.main = 0.8, col = hcl.colors(3, "PuBu")))
 ```
 
 ```{r population_distribution, echo=FALSE}
